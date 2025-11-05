@@ -7,12 +7,26 @@ export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('adminToken')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '')
+    // Try to get token from multiple sources
+    let token = request.cookies.get('adminToken')?.value || 
+                request.headers.get('authorization')?.replace('Bearer ', '') ||
+                request.headers.get('x-authorization')?.replace('Bearer ', '')
+
+    // If still no token, try to read from the request body (for FormData)
+    // Note: We can't read FormData twice, so we'll handle this differently
+    if (!token) {
+      // Try to get from query string as a last resort (not recommended but works)
+      const url = new URL(request.url)
+      const tokenFromQuery = url.searchParams.get('token')
+      
+      if (tokenFromQuery) {
+        token = tokenFromQuery
+      }
+    }
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'No authentication token provided' },
+        { success: false, error: 'No authentication token provided. Please login again.' },
         { status: 401 }
       )
     }
@@ -33,16 +47,25 @@ export async function POST(request: NextRequest) {
     }
 
     const headers: HeadersInit = {
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      // Don't set Content-Type for FormData - let fetch set it with boundary
+      // But we can set other headers
     }
-    // Don't set Content-Type for FormData - let fetch set it with boundary
+    
+    // Log the token being sent (first 20 chars only for security)
+    console.log('[Room Upload API] Sending token:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN')
 
-    const response = await fetch(getApiUrl('/api/admin/room-uploads/single'), {
+    const backendUrl = getApiUrl('/api/admin/room-uploads/single')
+    console.log('[Room Upload API] Forwarding to backend:', backendUrl)
+
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers,
       credentials: 'include',
       body: formData
     })
+    
+    console.log('[Room Upload API] Backend response status:', response.status)
 
     const data = await response.json()
 

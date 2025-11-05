@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
@@ -14,7 +15,8 @@ import {
   User,
   BarChart3,
   Settings,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react'
 
 const navigation = [
@@ -32,8 +34,82 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const pathname = usePathname()
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Check if token exists in localStorage
+        const token = localStorage.getItem('adminToken')
+        
+        if (!token) {
+          // No token, redirect to login
+          router.push(`/admin/login?from=${encodeURIComponent(pathname)}`)
+          return
+        }
+
+        // Verify token with backend
+        const verifyResponse = await fetch('/api/admin-auth/verify', {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        })
+
+        if (!verifyResponse.ok) {
+          // Token invalid, clear storage and redirect
+          localStorage.removeItem('adminToken')
+          localStorage.removeItem('adminUser')
+          router.push(`/admin/login?from=${encodeURIComponent(pathname)}`)
+          return
+        }
+
+        const verifyData = await verifyResponse.json()
+        
+        if (!verifyData.valid || !verifyData.admin) {
+          // Verification failed
+          localStorage.removeItem('adminToken')
+          localStorage.removeItem('adminUser')
+          router.push(`/admin/login?from=${encodeURIComponent(pathname)}`)
+          return
+        }
+
+        // Auth is valid
+        setCheckingAuth(false)
+      } catch (error) {
+        console.error('Auth check error:', error)
+        // On error, redirect to login
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminUser')
+        router.push(`/admin/login?from=${encodeURIComponent(pathname)}`)
+      }
+    }
+
+    // Skip auth check for login page
+    if (pathname === '/admin/login') {
+      setCheckingAuth(false)
+      return
+    }
+
+    checkAuth()
+  }, [pathname, router])
+
+  // Show loading state while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-amber-600 mx-auto mb-4" />
+          <p className="text-zinc-600">Checking authentication...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">

@@ -123,6 +123,7 @@ export default function NewRoomPage() {
       const headers: HeadersInit = {}
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
+        headers['X-Authorization'] = `Bearer ${token}` // Also send as custom header
       }
 
       // Use Next.js API route instead of direct backend call
@@ -132,6 +133,16 @@ export default function NewRoomPage() {
         headers,
         body: formData
       })
+
+      // Handle 401 error specifically
+      if (uploadResponse.status === 401) {
+        const errorData = await uploadResponse.json().catch(() => ({ error: 'Authentication failed' }))
+        toast.error(errorData.error || 'Authentication failed. Please login again.')
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminUser')
+        window.location.href = '/admin/login'
+        return
+      }
 
       const uploadData = await uploadResponse.json()
 
