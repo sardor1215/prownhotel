@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         success: response.ok,
         message: data.message || (response.ok ? 'Login successful' : 'Login failed'),
         admin: data.admin,
+        token: data.token, // Include token in response for localStorage
         error: data.error,
       }),
       {

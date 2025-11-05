@@ -77,12 +77,14 @@ export default function AdminLoginPage() {
         if (data.token) {
           localStorage.setItem('adminToken', data.token);
           console.log('Stored admin token in localStorage');
+        } else {
+          console.warn('No token in login response, authentication may fail');
         }
         
         console.log('Stored admin user in localStorage:', data.admin);
         
         // Wait a moment to ensure cookie is set
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         // Use router.push for client-side navigation
         console.log('Login successful, redirecting to:', redirectTo);
@@ -90,6 +92,11 @@ export default function AdminLoginPage() {
         // Force a hard navigation to ensure cookies are included
         window.location.href = redirectTo;
         return;
+      }
+      
+      // If login failed, show error
+      if (data && data.error) {
+        throw new Error(data.error || 'Login failed. Please check your credentials.');
       }
 
       // If we don't have admin data from login response, try to verify via same-origin API route
