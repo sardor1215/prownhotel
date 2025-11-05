@@ -155,50 +155,23 @@ export default function NewRoomPage() {
         // Log the URL for debugging
         console.log('Upload successful, received URL:', uploadData.url)
         
-        // Fetch the image from backend and convert to blob URL for display
-        try {
-          const backendUrl = getBackendUrl()
-          const imageUrl = `${backendUrl}${uploadData.url}`
-          console.log('Fetching image from backend:', imageUrl)
-          
-          const imageResponse = await fetch(imageUrl, {
-            credentials: 'include',
-            mode: 'cors'
-          })
-          
-          if (imageResponse.ok) {
-            const blob = await imageResponse.blob()
-            const blobUrl = URL.createObjectURL(blob)
-            
-            // Update with blob URL for display
-            const updatedImages = [...images]
-            updatedImages[index] = {
-              file: null, // Clear file after upload
-              url: blobUrl, // Use blob URL for display (avoids CORS)
-              uploadedUrl: uploadData.url, // Store server URL for submission
-              uploading: false,
-              uploaded: true
-            }
-            setImages(updatedImages)
-            console.log('Updated images array with blob URL:', updatedImages)
-            toast.success('Image uploaded successfully')
-          } else {
-            throw new Error('Failed to fetch uploaded image')
-          }
-        } catch (fetchError) {
-          console.error('Error fetching image:', fetchError)
-          // Fallback: use server URL directly
-          const updatedImages = [...images]
-          updatedImages[index] = {
-            file: null,
-            url: uploadData.url,
-            uploadedUrl: uploadData.url,
-            uploading: false,
-            uploaded: true
-          }
-          setImages(updatedImages)
-          toast.success('Image uploaded successfully')
+        // Use the backend URL directly for display - no need to fetch and convert to blob
+        const backendUrl = getBackendUrl()
+        const imageUrl = `${backendUrl}${uploadData.url}`
+        console.log('Image URL for display:', imageUrl)
+        
+        // Update with server URL directly
+        const updatedImages = [...images]
+        updatedImages[index] = {
+          file: null, // Clear file after upload
+          url: imageUrl, // Use server URL directly for display
+          uploadedUrl: uploadData.url, // Store relative URL for submission
+          uploading: false,
+          uploaded: true
         }
+        setImages(updatedImages)
+        console.log('Updated images array:', updatedImages)
+        toast.success('Image uploaded successfully')
       } else {
         throw new Error(uploadData.error || 'Upload failed')
       }

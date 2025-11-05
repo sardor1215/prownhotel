@@ -143,11 +143,15 @@ const staticOptions = {
   setHeaders: (res, path) => {
     // Set CORS headers for static files
     const origin = res.req.headers.origin;
+    // Always set the specific origin if present, otherwise use wildcard
+    // But don't set credentials if using wildcard
     if (origin) {
       res.setHeader("Access-Control-Allow-Origin", origin);
       res.setHeader("Vary", "Origin");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
     } else {
       res.setHeader("Access-Control-Allow-Origin", "*");
+      // Don't set credentials with wildcard - it's not allowed
     }
 
     res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
@@ -155,7 +159,6 @@ const staticOptions = {
       "Access-Control-Allow-Headers",
       "Content-Type, Authorization, Range"
     );
-    res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader(
       "Access-Control-Expose-Headers",
       "Content-Length, Content-Range"

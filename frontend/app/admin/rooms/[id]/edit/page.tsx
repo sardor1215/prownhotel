@@ -264,11 +264,17 @@ export default function EditRoomPage() {
           URL.revokeObjectURL(newImages[index].url)
         }
         
+        // Use the backend URL directly for display
+        const backendUrl = getBackendUrl()
+        const imageUrl = `${backendUrl}${uploadData.url}`
+        console.log('Image uploaded, URL:', imageUrl)
+        
         // Update with uploaded URL
         const updatedImages = [...images]
         updatedImages[index] = {
           file: null, // Clear file after upload
-          url: uploadData.url, // Server URL
+          url: imageUrl, // Use full backend URL for display
+          uploadedUrl: uploadData.url, // Store relative URL for submission
           uploading: false,
           uploaded: true,
           isExisting: false
