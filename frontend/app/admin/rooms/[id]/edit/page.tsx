@@ -29,7 +29,8 @@ interface Room {
 
 interface ImageFile {
   file: File | null
-  url: string
+  url: string // Blob URL for preview or server URL
+  uploadedUrl?: string // Server URL (stored separately for form submission)
   uploading: boolean
   uploaded: boolean
   isExisting: boolean // True if this is an existing image from database
@@ -337,9 +338,29 @@ export default function EditRoomPage() {
     setSaving(true)
 
     // Filter out images that haven't been uploaded
+    // Use uploadedUrl (relative URL) if available, otherwise extract from full URL
     const validImages = images
-      .map(img => img.url)
-      .filter(url => url && url.trim() !== '' && !url.startsWith('blob:'))
+      .map(img => {
+        // Use uploadedUrl if available (relative URL from server)
+        if (img.uploadedUrl) {
+          return img.uploadedUrl
+        }
+        // If url is a full URL, extract the relative path
+        if (img.url && img.url.startsWith('http')) {
+          const urlObj = new URL(img.url)
+          return urlObj.pathname
+        }
+        // If url is already a relative path, use it
+        if (img.url && !img.url.startsWith('blob:') && !img.url.startsWith('http')) {
+          return img.url
+        }
+        // For existing images, use the URL as-is if it's a relative path
+        if (img.isExisting && img.url) {
+          return img.url
+        }
+        return null
+      })
+      .filter((url): url is string => url !== null && url.trim() !== '')
 
     if (validImages.length === 0) {
       toast.error('Please upload at least one image')

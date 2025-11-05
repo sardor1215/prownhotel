@@ -227,10 +227,25 @@ export default function NewRoomPage() {
     setLoading(true)
 
     // Filter out images that haven't been uploaded
-    // Use uploadedUrl (server URL) if available, otherwise use url (but skip blob URLs)
+    // Use uploadedUrl (relative URL) if available, otherwise extract from full URL
     const validImages = images
-      .map(img => img.uploadedUrl || img.url)
-      .filter(url => url && url.trim() !== '' && !url.startsWith('blob:'))
+      .map(img => {
+        // Use uploadedUrl if available (relative URL from server)
+        if (img.uploadedUrl) {
+          return img.uploadedUrl
+        }
+        // If url is a full URL, extract the relative path
+        if (img.url && img.url.startsWith('http')) {
+          const urlObj = new URL(img.url)
+          return urlObj.pathname
+        }
+        // If url is already a relative path, use it
+        if (img.url && !img.url.startsWith('blob:') && !img.url.startsWith('http')) {
+          return img.url
+        }
+        return null
+      })
+      .filter((url): url is string => url !== null && url.trim() !== '')
 
     if (validImages.length === 0) {
       toast.error('Please upload at least one image')
