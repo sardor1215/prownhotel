@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .preview { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .preview img { max-width: 200px; max-height: 200px; border: 1px solid #ddd; }
+        .status { margin-top: 10px; padding: 10px; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Image Upload Test</h1>
+    
+    <div>
+        <input type="file" id="imageInput" multiple accept="image/*">
+        <button onclick="uploadImages()">Upload Images</button>
+    </div>
+    
+    <div id="status" class="status"></div>
+    <div id="preview" class="preview"></div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        const statusDiv = document.getElementById('status');
+        const previewDiv = document.getElementById('preview');
+        
+        function setStatus(message, isError = false) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${isError ? 'error' : 'success'}`;
+            console.log(message);
+        }
+        
+        async function uploadImages() {
+            const input = document.getElementById('imageInput');
+            const files = input.files;
+            
+            if (!files || files.length === 0) {
+                setStatus('Please select at least one image', true);
+                return;
+            }
+            
+            setStatus('Uploading images...');
+            previewDiv.innerHTML = '';
+            
+            try {
+                const uploadPromises = Array.from(files).map(file => {
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        previewDiv.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Upload file
+                    return fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.url) {
+                            throw new Error('No URL in response');
+                        }
+                        return data.url;
+                    });
+                });
+                
+                const results = await Promise.all(uploadPromises);
+                setStatus(`Successfully uploaded ${results.length} images!`);
+                
+                // Show uploaded image URLs
+                results.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+                    img.onerror = () => {
+                        img.alt = `Failed to load: ${url}`;
+                        img.style.border = '2px solid red';
+                    };
+                    previewDiv.appendChild(img);
+                    
+                    const urlDiv = document.createElement('div');
+                    urlDiv.textContent = url;
+                    urlDiv.style.fontSize = '12px';
+                    urlDiv.style.wordBreak = 'break-all';
+                    previewDiv.appendChild(urlDiv);
+                });
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                setStatus(`Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

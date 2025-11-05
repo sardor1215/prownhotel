@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#F3F4F6"/>
+  
+  <!-- Shower base -->
+  <rect x="250" y="400" width="300" height="150" rx="10" fill="#E5E7EB"/>
+  
+  <!-- Shower head -->
+  <circle cx="400" cy="200" r="80" fill="#9CA3AF"/>
+  
+  <!-- Water drops -->
+  <path d="M350 300C350 300 370 320 400 320C430 320 450 300 450 300" stroke="#93C5FD" stroke-width="4" stroke-linecap="round" stroke-dasharray="10,5"/>
+  <path d="M380 260C380 260 390 280 400 280C410 280 420 260 420 260" stroke="#93C5FD" stroke-width="3" stroke-linecap="round" stroke-dasharray="8,4"/>
+  
+  <!-- Shower controls -->
+  <circle cx="300" cy="350" r="20" fill="#6B7280"/>
+  <circle cx="500" cy="350" r="20" fill="#6B7280"/>
+  
+  <!-- Shower glass -->
+  <path d="M300 200L250 400H550L500 200H300Z" fill="#E5E7EB" fill-opacity="0.5" stroke="#9CA3AF" stroke-width="2"/>
+  
+  <!-- Text -->
+  <text x="400" y="550" font-family="Arial" font-size="24" text-anchor="middle" fill="#6B7280">Shower Cabin</text>
+</svg>
