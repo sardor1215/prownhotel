@@ -250,15 +250,6 @@ export default function AdminMenuPage() {
               </button>
             </div>
           </div>
-
-          {/* Preview */}
-          <div className="border border-stone-200 rounded-lg overflow-hidden">
-            <iframe
-              src={`${getBackendUrl()}${menu.url}`}
-              className="w-full h-[600px]"
-              title="Menu Preview"
-            />
-          </div>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-12 text-center">

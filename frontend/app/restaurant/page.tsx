@@ -5,8 +5,12 @@ import Link from 'next/link'
 import { Clock, Utensils, Coffee, Home, Phone, Mail, MapPin } from 'lucide-react'
 import { getBackendUrl } from '@/lib/backend-url'
 import FadeInSection from '@/components/FadeInSection'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/lib/i18n'
 
 export default function RestaurantPage() {
+  const { language } = useLanguage()
+  const t = translations[language]
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Navigation */}
@@ -23,9 +27,9 @@ export default function RestaurantPage() {
             </Link>
             
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">Home</Link>
-              <Link href="/rooms" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">Rooms</Link>
-              <Link href="/restaurant" className="text-[#D4AF37] font-bold">Restaurant</Link>
+              <Link href="/" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">{t.nav.home}</Link>
+              <Link href="/rooms" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">{t.nav.rooms}</Link>
+              <Link href="/restaurant" className="text-[#D4AF37] font-bold">{t.nav.restaurant}</Link>
               <a 
                 href="#" 
                 onClick={async (e) => {
@@ -36,19 +40,19 @@ export default function RestaurantPage() {
                     if (data.success && data.menu) {
                       window.open(`${getBackendUrl()}${data.menu.url}`, '_blank')
                     } else {
-                      alert('Menu not available')
+                      alert(t.restaurant.footer.menuNotAvailable)
                     }
                   } catch (error) {
                     console.error('Error fetching menu:', error)
-                    alert('Failed to load menu')
+                    alert(t.restaurant.footer.failedToLoad)
                   }
                 }}
                 className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors cursor-pointer"
               >
-                Menu
+                {t.nav.menu}
               </a>
-              <a href="/#about" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">About Us</a>
-              <a href="/#contact" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">Contact Us</a>
+              <a href="/#about" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">{t.nav.about}</a>
+              <a href="/#contact" className="text-gray-700 hover:text-[#D4AF37] font-medium transition-colors">{t.nav.contact}</a>
             </div>
           </div>
         </div>
@@ -65,16 +69,16 @@ export default function RestaurantPage() {
             <div className="flex items-center gap-2 mb-6">
               <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
                 <Home className="w-5 h-5" />
-                <span>Home</span>
+                <span>{t.restaurant.breadcrumb.home}</span>
               </Link>
               <span className="text-gray-400">/</span>
-              <span className="text-[#D4AF37]">Restaurant</span>
+              <span className="text-[#D4AF37]">{t.restaurant.hero.title}</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-serif font-bold mb-4">
-              Restaurant
+              {t.restaurant.hero.title}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl">
-              An exquisite culinary experience awaits you
+              {t.restaurant.hero.subtitle}
             </p>
           </FadeInSection>
         </div>
@@ -87,16 +91,13 @@ export default function RestaurantPage() {
           <FadeInSection direction="left">
             <div className="mb-6">
               <p className="text-[#D4AF37] font-semibold text-sm uppercase tracking-wider mb-2">
-                A Taste Experience
+                {t.restaurant.main.tagline}
               </p>
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6">
-                Crown Lounge Restaurant
+                {t.restaurant.main.title}
               </h2>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                We bring together the most beautiful selections of unique Turkish and World cuisines, 
-                prepared with the finest ingredients and the skillful touches of master chefs. 
-                Our restaurant serves not only our staying guests but also external guests as an 
-                A La Carte Restaurant.
+                {t.restaurant.main.description}
               </p>
             </div>
 
@@ -104,27 +105,27 @@ export default function RestaurantPage() {
             <FadeInSection delay={120} className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
               <div className="flex items-center gap-3 mb-4">
                 <Clock className="w-6 h-6 text-[#D4AF37]" />
-                <h3 className="text-2xl font-serif font-bold text-gray-900">Service Hours</h3>
+                <h3 className="text-2xl font-serif font-bold text-gray-900">{t.restaurant.hours.title}</h3>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-[#D4AF37]" />
-                    <span className="font-semibold text-gray-900">Breakfast</span>
+                    <span className="font-semibold text-gray-900">{t.restaurant.hours.breakfast}</span>
                   </div>
                   <span className="text-gray-700">08:00 - 10:00</span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-[#D4AF37]" />
-                    <span className="font-semibold text-gray-900">Room Service</span>
+                    <span className="font-semibold text-gray-900">{t.restaurant.hours.roomService}</span>
                   </div>
                   <span className="text-gray-700">10:00 - 23:00</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-[#D4AF37]" />
-                    <span className="font-semibold text-gray-900">A La Carte</span>
+                    <span className="font-semibold text-gray-900">{t.restaurant.hours.aLaCarte}</span>
                   </div>
                   <span className="text-gray-700">08:00 - 00:00</span>
                 </div>
@@ -135,11 +136,10 @@ export default function RestaurantPage() {
             <FadeInSection delay={220} className="bg-gradient-to-br from-[#D4AF37] to-[#B8941F] rounded-xl shadow-lg p-6 text-white">
               <div className="flex items-center gap-3 mb-4">
                 <Coffee className="w-6 h-6" />
-                <h3 className="text-2xl font-serif font-bold">Crown Lounge Bar</h3>
+                <h3 className="text-2xl font-serif font-bold">{t.restaurant.bar.title}</h3>
               </div>
               <p className="text-lg leading-relaxed">
-                We serve our valued guests 7 days a week from 08:00 until 00:00 with 
-                alcoholic/non-alcoholic beverages and coffee options.
+                {t.restaurant.bar.description}
               </p>
             </FadeInSection>
           </FadeInSection>
@@ -150,8 +150,8 @@ export default function RestaurantPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center text-white p-8">
                   <Coffee className="w-24 h-24 mx-auto mb-4 text-[#D4AF37]" />
-                  <h3 className="text-3xl font-serif font-bold mb-2">Crown Lounge</h3>
-                  <p className="text-gray-300">Experience our elegant lounge atmosphere</p>
+                  <h3 className="text-3xl font-serif font-bold mb-2">{t.restaurant.lounge.title}</h3>
+                  <p className="text-gray-300">{t.restaurant.lounge.subtitle}</p>
                 </div>
               </div>
             </div>
@@ -162,28 +162,27 @@ export default function RestaurantPage() {
         <FadeInSection direction="up" className="mt-16 bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
           <div className="text-center mb-8">
             <h3 className="text-3xl font-serif font-bold text-gray-900 mb-4">
-              Reserve Your Table
+              {t.restaurant.reserve.title}
             </h3>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Experience fine dining at Crown Lounge Restaurant. We welcome both hotel guests 
-              and external visitors. For reservations, please contact us.
+              {t.restaurant.reserve.description}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 mt-8">
             <FadeInSection delay={100} className="text-center p-6 bg-gray-50 rounded-xl">
               <Utensils className="w-10 h-10 text-[#D4AF37] mx-auto mb-3" />
-              <h4 className="font-bold text-gray-900 mb-2">Fine Dining</h4>
-              <p className="text-gray-600 text-sm">Turkish and International cuisine</p>
+              <h4 className="font-bold text-gray-900 mb-2">{t.restaurant.features.fineDining.title}</h4>
+              <p className="text-gray-600 text-sm">{t.restaurant.features.fineDining.description}</p>
             </FadeInSection>
             <FadeInSection delay={200} className="text-center p-6 bg-gray-50 rounded-xl">
               <Clock className="w-10 h-10 text-[#D4AF37] mx-auto mb-3" />
-              <h4 className="font-bold text-gray-900 mb-2">Flexible Hours</h4>
-              <p className="text-gray-600 text-sm">Breakfast, lunch, and dinner service</p>
+              <h4 className="font-bold text-gray-900 mb-2">{t.restaurant.features.flexibleHours.title}</h4>
+              <p className="text-gray-600 text-sm">{t.restaurant.features.flexibleHours.description}</p>
             </FadeInSection>
             <FadeInSection delay={300} className="text-center p-6 bg-gray-50 rounded-xl">
               <Coffee className="w-10 h-10 text-[#D4AF37] mx-auto mb-3" />
-              <h4 className="font-bold text-gray-900 mb-2">Lounge Bar</h4>
-              <p className="text-gray-600 text-sm">Open daily until midnight</p>
+              <h4 className="font-bold text-gray-900 mb-2">{t.restaurant.features.loungeBar.title}</h4>
+              <p className="text-gray-600 text-sm">{t.restaurant.features.loungeBar.description}</p>
             </FadeInSection>
           </div>
         </FadeInSection>
@@ -218,7 +217,7 @@ export default function RestaurantPage() {
             
             {/* Our Rooms */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Our Rooms</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.restaurant.footer.ourRooms}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><Link href="/rooms/standard" className="hover:text-[#D4AF37] transition-colors">Standard Room</Link></li>
                 <li><Link href="/rooms/family" className="hover:text-[#D4AF37] transition-colors">Family Room</Link></li>
@@ -229,9 +228,9 @@ export default function RestaurantPage() {
             
             {/* Other Links */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Other Links</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.restaurant.footer.otherLinks}</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/restaurant" className="hover:text-[#D4AF37] transition-colors">Restaurant</Link></li>
+                <li><Link href="/restaurant" className="hover:text-[#D4AF37] transition-colors">{t.nav.restaurant}</Link></li>
                 <li>
                   <a 
                     href="#" 
@@ -243,26 +242,26 @@ export default function RestaurantPage() {
                         if (data.success && data.menu) {
                           window.open(`${getBackendUrl()}${data.menu.url}`, '_blank')
                         } else {
-                          alert('Menu not available')
+                          alert(t.restaurant.footer.menuNotAvailable)
                         }
                       } catch (error) {
                         console.error('Error fetching menu:', error)
-                        alert('Failed to load menu')
+                        alert(t.restaurant.footer.failedToLoad)
                       }
                     }}
                     className="hover:text-[#D4AF37] transition-colors cursor-pointer"
                   >
-                    Menu
+                    {t.nav.menu}
                   </a>
                 </li>
-                <li><Link href="/#about" className="hover:text-[#D4AF37] transition-colors">About Us</Link></li>
-                <li><Link href="/#contact" className="hover:text-[#D4AF37] transition-colors">Contact Us</Link></li>
+                <li><Link href="/#about" className="hover:text-[#D4AF37] transition-colors">{t.nav.about}</Link></li>
+                <li><Link href="/#contact" className="hover:text-[#D4AF37] transition-colors">{t.nav.contact}</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>Designed and Powered by Ata Bilişim</p>
+            <p>Designed and Powered by SE Lab</p>
           </div>
         </div>
       </footer>

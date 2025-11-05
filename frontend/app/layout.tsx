@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import QueryProvider from './QueryProvider'
+import LanguageWrapper from '@/components/LanguageWrapper'
 
 
 // Preload the Inter font with all necessary weights and subsets
@@ -30,6 +31,11 @@ export const metadata: Metadata = {
   keywords: 'crown salamis hotel, luxury hotel cyprus, five star hotel, nicosia hotel, famagusta hotel, balikesir hotel, cyprus accommodation, premium rooms, hotel booking',
   authors: [{ name: "Crown Salamis Hotel" }],
   metadataBase: new URL('https://crownsalamishotel.com'),
+  icons: {
+    icon: '/logo.jpeg',
+    shortcut: '/logo.jpeg',
+    apple: '/logo.jpeg',
+  },
   openGraph: {
     title: "Crown Salamis Hotel - Five Star Luxury Experience in Cyprus",
     description: "Experience five-star luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities. Book your perfect stay today.",
@@ -93,6 +99,8 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} font-sans`} suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#000000" />
+        <link rel="icon" href="/logo.jpeg" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/logo.jpeg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -102,33 +110,35 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-light text-text antialiased">
         <QueryProvider>
-          {/* <Navbar /> */}
-          {children}
+          <LanguageWrapper>
+            {/* <Navbar /> */}
+            {children}
 
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff333',
-              },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff333',
                 },
-              },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#fff',
+                  },
                 },
-              },
-            }}
-          />
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
+          </LanguageWrapper>
         </QueryProvider>
       </body>
     </html>

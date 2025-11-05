@@ -166,7 +166,20 @@ const staticOptions = {
 
     // Set security headers for static files
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
+    
+    // Allow menu PDFs to be embedded in iframes (for preview)
+    // Check if this is a menu PDF file
+    const isMenuPdf = path.includes('/menu/') && (path.endsWith('.pdf') || path.endsWith('.PDF'));
+    
+    if (isMenuPdf) {
+      // Remove X-Frame-Options header for menu PDFs to allow cross-origin embedding
+      // This allows the PDF to be displayed in an iframe on the frontend (localhost:3000)
+      // Note: We don't set the header at all, which allows embedding
+    } else {
+      // For other files, deny embedding for security
+      res.setHeader("X-Frame-Options", "DENY");
+    }
+    
     res.setHeader("X-XSS-Protection", "1; mode=block");
 
     // Cache control for static files (1 year for immutable assets)
@@ -268,8 +281,20 @@ app.use(
       
       // Security headers
       res.setHeader("X-Content-Type-Options", "nosniff");
-      // Note: X-Frame-Options: DENY can cause issues with images, use SAMEORIGIN instead
-      res.setHeader("X-Frame-Options", "SAMEORIGIN");
+      
+      // Allow menu PDFs to be embedded in iframes (for preview)
+      // Check if this is a menu PDF file
+      const filePathStr = filePath.toString();
+      const isMenuPdf = filePathStr.includes('/menu/') && (filePathStr.endsWith('.pdf') || filePathStr.endsWith('.PDF'));
+      
+      if (isMenuPdf) {
+        // Don't set X-Frame-Options for menu PDFs to allow cross-origin embedding
+        // This allows the PDF to be displayed in an iframe on the frontend (localhost:3000)
+      } else {
+        // For other files, use SAMEORIGIN to allow same-origin embedding
+        res.setHeader("X-Frame-Options", "SAMEORIGIN");
+      }
+      
       res.setHeader("X-XSS-Protection", "1; mode=block");
       res.setHeader("Referrer-Policy", "same-origin");
 

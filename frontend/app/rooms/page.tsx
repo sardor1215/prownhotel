@@ -570,7 +570,7 @@ function RoomsContent() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>Designed and Powered by Ata Bilişim</p>
+            <p>Designed and Powered by SE Lab</p>
           </div>
         </div>
       </footer>

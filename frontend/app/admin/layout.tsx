@@ -25,8 +25,8 @@ const navigation = [
   { name: 'Rooms', href: '/admin/rooms', icon: Hotel },
   { name: 'Room Types', href: '/admin/room-types', icon: Bed },
   { name: 'Menu', href: '/admin/menu', icon: FileText },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3, disabled: true },
+  { name: 'Settings', href: '/admin/settings', icon: Settings, disabled: true },
 ]
 
 export default function AdminLayout({
@@ -135,6 +135,20 @@ export default function AdminLayout({
           <nav className="flex-1 space-y-1 px-4 py-6">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href === '/admin/dashboard' && pathname === '/admin')
+              const isDisabled = item.disabled
+              
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.name}
+                    className="group flex items-center px-4 py-3 text-sm font-medium rounded-lg text-zinc-500 cursor-not-allowed opacity-50"
+                  >
+                    <item.icon className="mr-3 h-5 w-5 text-zinc-500" />
+                    {item.name}
+                  </div>
+                )
+              }
+              
               return (
                 <Link
                   key={item.name}
@@ -194,6 +208,20 @@ export default function AdminLayout({
           <nav className="flex-1 space-y-1 px-4 py-6">
             {navigation.map((item) => {
               const isActive = pathname === item.href || (item.href === '/admin/dashboard' && pathname === '/admin')
+              const isDisabled = item.disabled
+              
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.name}
+                    className="group flex items-center px-4 py-3 text-sm font-medium rounded-lg text-zinc-500 cursor-not-allowed opacity-50"
+                  >
+                    <item.icon className="mr-3 h-5 w-5 text-zinc-500" />
+                    {item.name}
+                  </div>
+                )
+              }
+              
               return (
                 <Link
                   key={item.name}

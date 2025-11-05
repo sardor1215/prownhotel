@@ -8,6 +8,8 @@ import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import toast from 'react-hot-toast'
 import FadeInSection from '@/components/FadeInSection'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/lib/i18n'
 
 interface Room {
   id: number
@@ -21,6 +23,9 @@ interface Room {
 }
 
 export default function HomePage() {
+  const { language, setLanguage } = useLanguage()
+  const t = translations[language]
+  
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [adults, setAdults] = useState(2)
@@ -167,28 +172,45 @@ export default function HomePage() {
             
             <div className="hidden lg:flex items-center space-x-8">
               <Link href="/" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
-                Home
+                {t.nav.home}
               </Link>
               <Link href="/rooms" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
-                Rooms
+                {t.nav.rooms}
+              </Link>
+              <Link href="/restaurant" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
+                {t.nav.restaurant}
               </Link>
               <a 
                 href="#" 
                 onClick={handleMenuClick}
                 className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}
               >
-                Menu
+                {t.nav.menu}
               </a>
               <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}>
-                About Us
-                </a>
+                {t.nav.about}
+              </a>
               <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}>
-                Contact Us
+                {t.nav.contact}
               </a>
               <div className="flex items-center space-x-2">
-                <span className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium`}>English</span>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium hover:text-[#D4AF37] transition-colors ${
+                    language === 'en' ? 'font-bold' : ''
+                  }`}
+                >
+                  English
+                </button>
                 <span className={scrolled ? 'text-gray-400' : 'text-white'}>|</span>
-                <span className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium`}>Turkish</span>
+                <button
+                  onClick={() => setLanguage('tr')}
+                  className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium hover:text-[#D4AF37] transition-colors ${
+                    language === 'tr' ? 'font-bold' : ''
+                  }`}
+                >
+                  Turkish
+                </button>
               </div>
             </div>
 
@@ -202,8 +224,9 @@ export default function HomePage() {
 
           {mobileMenuOpen && (
             <div className="lg:hidden pb-4 space-y-3 bg-white rounded-b-lg shadow-lg">
-              <Link href="/" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">Home</Link>
-              <Link href="/rooms" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">Rooms</Link>
+              <Link href="/" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.home}</Link>
+              <Link href="/rooms" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.rooms}</Link>
+              <Link href="/restaurant" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.restaurant}</Link>
               <a 
                 href="#" 
                 onClick={(e) => {
@@ -213,10 +236,10 @@ export default function HomePage() {
                 }}
                 className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                Menu
+                {t.nav.menu}
               </a>
-              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">About Us</a>
-              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">Contact Us</a>
+              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">{t.nav.about}</a>
+              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">{t.nav.contact}</a>
             </div>
           )}
         </div>
@@ -242,9 +265,9 @@ export default function HomePage() {
               <h1 className="text-3xl md:text-5xl font-serif text-gray-900 mb-2">
                 Living your experience
               </h1>
-              <h2 className="text-2xl md:text-4xl font-serif text-[#D4AF37] mb-2">
+              {/* <h2 className="text-2xl md:text-4xl font-serif text-[#D4AF37] mb-2">
                 Five Star Experience
-              </h2>
+              </h2> */}
               <p className="text-sm text-gray-600 mt-2">
                 Required fields are followed by *
               </p>
@@ -253,7 +276,7 @@ export default function HomePage() {
             <form onSubmit={handleReservation} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Check-in <span className="text-[#D4AF37]">*</span>
+                  {t.hero.checkIn} <span className="text-[#D4AF37]">*</span>
                 </label>
                 <input
                   type="date"
@@ -267,7 +290,7 @@ export default function HomePage() {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Check-out <span className="text-[#D4AF37]">*</span>
+                  {t.hero.checkOut} <span className="text-[#D4AF37]">*</span>
                 </label>
                 <input
                   type="date"
@@ -281,7 +304,7 @@ export default function HomePage() {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Adults
+                  {t.hero.adults}
                 </label>
                 <select
                   value={adults}
@@ -296,7 +319,7 @@ export default function HomePage() {
               
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Children
+                  {t.hero.children}
                 </label>
                 <select
                   value={children}
@@ -314,7 +337,7 @@ export default function HomePage() {
                   type="submit"
                   className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
-                  BOOK NOW
+                  {t.hero.checkAvailability}
                 </button>
               </div>
             </form>
@@ -323,35 +346,109 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-gray-50">
+      <section id="about" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeInSection direction="up" className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-4">
-              <Star className="w-5 h-5 text-[#D4AF37] mr-2" />
+          {/* Header */}
+          <FadeInSection direction="up" className="text-center mb-16">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
             </div>
-            <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
+            <h2 className="text-5xl md:text-7xl font-serif text-gray-900 mb-2">
               Crown Salamis
             </h2>
-            <h3 className="text-4xl md:text-6xl font-serif text-gray-900 mb-6">
+            <h3 className="text-4xl md:text-6xl font-serif text-[#D4AF37] mb-8">
               Hotel
             </h3>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Our hotel, located in a prime position, is within walking distance of all Eastern Mediterranean University (DAÜ) campuses. 
-              With proximity to Glapsides Beach and Silver Beach, two of the island's most beautiful beaches, we offer you the opportunity 
-              to enjoy the sea, sand, and sun. Each of our rooms has been thoughtfully designed with the finest details for our guests' comfort, 
-              offering sea views and a peaceful accommodation experience where you can spend pleasant moments.
-            </p>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mt-4">
-              Our expert, friendly, and professional team is honored to serve you. Crown Salamis Hotel offers one of the most special 
-              accommodation experiences in Famagusta. We are delighted to host you.
-            </p>
-            <Link 
-              href="/rooms"
-              className="inline-block mt-8 border-2 border-gray-900 text-gray-900 font-semibold px-8 py-3 rounded-lg hover:bg-gray-900 hover:text-white transition-all duration-300"
-            >
-              Learn More
-            </Link>
           </FadeInSection>
+
+          {/* Main Content - Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+            {/* Left Column - Text Content */}
+            <FadeInSection direction="left" className="space-y-6">
+              <div className="space-y-4">
+                <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                  {t.about.description1}
+                </p>
+                <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                  {t.about.description2}
+                </p>
+              </div>
+              
+              {/* Key Features */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <MapPin className="w-5 h-5 text-[#D4AF37] mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">{t.about.features.location.title}</h4>
+                    <p className="text-sm text-gray-600">{t.about.features.location.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Star className="w-5 h-5 text-[#D4AF37] mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">{t.about.features.beaches.title}</h4>
+                    <p className="text-sm text-gray-600">{t.about.features.beaches.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Users className="w-5 h-5 text-[#D4AF37] mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">{t.about.features.team.title}</h4>
+                    <p className="text-sm text-gray-600">{t.about.features.team.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <Bed className="w-5 h-5 text-[#D4AF37] mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1">{t.about.features.luxury.title}</h4>
+                    <p className="text-sm text-gray-600">{t.about.features.luxury.description}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Link 
+                href="/rooms"
+                className="inline-block mt-8 bg-[#D4AF37] hover:bg-[#B8941F] text-white font-semibold px-8 py-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                {t.about.learnMore}
+              </Link>
+            </FadeInSection>
+
+            {/* Right Column - Visual Element */}
+            <FadeInSection direction="right" className="relative">
+              <div className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 to-gray-900/80"></div>
+                <div className="absolute inset-0 flex items-center justify-center p-8">
+                  <div className="text-center space-y-6">
+                    <div className="w-24 h-24 mx-auto bg-[#D4AF37]/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-[#D4AF37]/50">
+                      <Star className="w-12 h-12 text-[#D4AF37]" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-3xl md:text-4xl font-serif text-white mb-2">
+                        {t.about.experience.title}
+                      </h3>
+                      <p className="text-gray-200 text-lg">
+                        {t.about.experience.subtitle}
+                      </p>
+                    </div>
+                    <div className="flex justify-center space-x-4 pt-4">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-[#D4AF37]">5★</div>
+                        <div className="text-sm text-gray-300 mt-1">{t.about.experience.starService}</div>
+                      </div>
+                      <div className="w-px bg-gray-400"></div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-[#D4AF37]">24/7</div>
+                        <div className="text-sm text-gray-300 mt-1">{t.about.experience.support}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
         </div>
       </section>
 
@@ -360,14 +457,12 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
             <FadeInSection direction="left" className="mb-6 md:mb-0">
-              <p className="text-sm text-gray-400 mb-2">FEEL COMFORT IN PRIVILEGED ROOMS...</p>
+              <p className="text-sm text-gray-400 mb-2">{t.rooms.feelComfort}</p>
               <h2 className="text-4xl md:text-6xl font-serif text-white mb-4">
-                Our Rooms
+                {t.rooms.title}
               </h2>
               <p className="text-gray-400 max-w-2xl">
-                Experience luxury and comfort in our elegantly designed rooms. Each room offers sea views 
-                and has been thoughtfully designed with the finest details for your comfort. Located near 
-                Eastern Mediterranean University campuses and beautiful beaches like Glapsides Beach and Silver Beach.
+                {t.rooms.description}
               </p>
             </FadeInSection>
             <FadeInSection direction="right">
@@ -375,7 +470,7 @@ export default function HomePage() {
                 href="/rooms"
                 className="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-black transition-all duration-300"
               >
-                View All Rooms
+                {t.rooms.viewAll}
               </Link>
             </FadeInSection>
           </div>
@@ -386,8 +481,7 @@ export default function HomePage() {
             </div>
           ) : rooms.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-400 text-lg">No rooms available at the moment.</p>
-              <p className="text-gray-500 text-sm mt-2">Please check back later.</p>
+              <p className="text-gray-400 text-lg">{t.rooms.noRooms}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -410,11 +504,11 @@ export default function HomePage() {
                       <div className="p-6">
                         <h3 className="text-xl font-serif text-white mb-2">{room.name}</h3>
                         <p className="text-gray-400 text-sm mb-4">
-                          / {room.max_adults} adults {room.max_children > 0 ? `${room.max_children} children` : ''}
+                          / {room.max_adults} {t.rooms.adults} {room.max_children > 0 ? `${room.max_children} ${t.rooms.children}` : ''}
                           {room.room_type_name && ` • ${room.room_type_name}`}
                         </p>
                         <p className="text-[#D4AF37] text-xl font-bold">
-                          from {formatPrice(room.price_per_night)} per night
+                          {formatPrice(room.price_per_night)} {t.rooms.pricePerNight}
                         </p>
                       </div>
                     </div>
@@ -430,9 +524,9 @@ export default function HomePage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeInSection direction="up" className="text-center mb-12">
-            <p className="text-sm text-gray-600 mb-2">Make your stay memorable</p>
+            <p className="text-sm text-gray-600 mb-2">{t.services.subtitle}</p>
             <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
-              Our Services & Amenities
+              {t.services.title}
             </h2>
           </FadeInSection>
 
@@ -443,8 +537,8 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bed className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Room Service</h3>
-              <p className="text-gray-600 text-sm">10:00 - 22:00</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.roomService.title}</h3>
+              <p className="text-gray-600 text-sm">{t.services.roomService.description}</p>
             </FadeInSection>
 
             {/* Breakfast */}
@@ -452,8 +546,8 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Breakfast</h3>
-              <p className="text-gray-600 text-sm">08:00 - 10:00</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.breakfast.title}</h3>
+              <p className="text-gray-600 text-sm">{t.services.breakfast.description}</p>
             </FadeInSection>
 
             {/* Parking */}
@@ -461,8 +555,8 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Home className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Parking</h3>
-              <p className="text-gray-600 text-sm">Open Parking Area</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.parking.title}</h3>
+              <p className="text-gray-600 text-sm">{t.services.parking.description}</p>
             </FadeInSection>
 
             {/* High-Speed Internet */}
@@ -470,8 +564,8 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Phone className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Free WiFi</h3>
-              <p className="text-gray-600 text-sm">High-Speed Internet in Rooms & Public Areas</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.wifi.title}</h3>
+              <p className="text-gray-600 text-sm">{t.services.wifi.description}</p>
             </FadeInSection>
 
             {/* Transfer Service */}
@@ -479,8 +573,8 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ChevronRight className="w-8 h-8 text-[#D4AF37]" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Transfer Service</h3>
-              <p className="text-gray-600 text-sm">Comfortable Transportation</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.transfer.title}</h3>
+              <p className="text-gray-600 text-sm">{t.services.transfer.description}</p>
             </FadeInSection>
           </div>
 
@@ -498,7 +592,7 @@ export default function HomePage() {
                 <div className="text-center">
                   <p className="text-gray-300 text-sm mb-2">the</p>
                   <h3 className="text-7xl md:text-9xl font-bold text-orange-500">food</h3>
-                  <p className="text-white mt-4 text-lg">The Food By Mr. Özgiken an amazing Restaurant</p>
+                  <p className="text-white mt-4 text-lg">The Food By  an amazing Restaurant</p>
                 </div>
               </div>
             </FadeInSection>
@@ -536,7 +630,7 @@ export default function HomePage() {
           <FadeInSection direction="up" className="text-center mb-12">
             <p className="text-sm text-gray-600 mb-2">Make your stay memorable</p>
             <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
-              Have any questions?
+              {t.contact.haveQuestions}
             </h2>
           </FadeInSection>
 
@@ -576,7 +670,7 @@ export default function HomePage() {
                 <div>
                   <input
                     type="text"
-                    placeholder="Your name"
+                    placeholder={t.contact.name}
                     value={contactForm.name}
                     onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
                     required
@@ -586,7 +680,7 @@ export default function HomePage() {
                 <div>
                   <input
                     type="email"
-                    placeholder="Your email"
+                    placeholder={t.contact.email}
                     value={contactForm.email}
                     onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
                     required
@@ -595,7 +689,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <textarea
-                    placeholder="Your message"
+                    placeholder={t.contact.message}
                     rows={6}
                     value={contactForm.message}
                     onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
@@ -611,12 +705,12 @@ export default function HomePage() {
                   {submittingContact ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                      <span>Sending...</span>
+                      <span>{t.contact.sending}</span>
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      <span>Send Message</span>
+                      <span>{t.contact.send}</span>
                     </>
                   )}
                 </button>
@@ -675,7 +769,7 @@ export default function HomePage() {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>Designed and Powered by Ata Bilişim</p>
+            <p>Designed and Powered by SE Lab</p>
           </div>
         </div>
       </footer>
