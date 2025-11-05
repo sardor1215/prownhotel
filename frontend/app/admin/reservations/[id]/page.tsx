@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Calendar, User, Mail, Phone, ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/formatPrice'
+import { getApiUrl } from '@/lib/backend-url'
 
 interface Reservation {
   id: number
@@ -47,7 +48,7 @@ export default function ReservationDetailPage() {
       setLoading(true)
       const token = localStorage.getItem('admin_token')
       
-      const response = await fetch(`http://localhost:5000/api/reservations/${params.id}`, {
+      const response = await fetch(getApiUrl(`/api/reservations/${params.id}`), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +77,7 @@ export default function ReservationDetailPage() {
     try {
       const token = localStorage.getItem('admin_token')
       
-      const response = await fetch(`http://localhost:5000/api/reservations/${reservation.id}/status`, {
+      const response = await fetch(getApiUrl(`/api/reservations/${reservation.id}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

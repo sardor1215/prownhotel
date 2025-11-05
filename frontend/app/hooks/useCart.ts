@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Product } from '../page';
+import { Product } from '../products/types';
 
 export interface CartItem extends Pick<Product, 'id' | 'name' | 'price' | 'main_image'> {
   quantity: number;

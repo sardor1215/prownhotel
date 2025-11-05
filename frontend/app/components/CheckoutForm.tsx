@@ -9,7 +9,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { Product } from "../page";
+import { Product } from "../products/types";
 import { getImageUrl } from "../utils/image";
 
 export interface CartItem

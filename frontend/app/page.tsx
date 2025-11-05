@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, Send, Bed, Home } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
-import { getImageUrl, getApiUrl } from '@/lib/backend-url'
+import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import toast from 'react-hot-toast'
 import FadeInSection from '@/components/FadeInSection'
 
@@ -101,14 +101,35 @@ export default function HomePage() {
   const fetchRooms = async () => {
     try {
       setLoadingRooms(true)
-      const response = await fetch(getApiUrl('/api/rooms?limit=4'))
+      const apiUrl = getApiUrl('/api/rooms?limit=4')
+      console.log('🔍 Fetching rooms from:', apiUrl)
+      
+      const response = await fetch(apiUrl)
       const data = await response.json()
       
-      if (data.success) {
+      console.log('📦 Response data:', data)
+      console.log('✅ Response status:', response.status)
+      console.log('📊 Data keys:', data ? Object.keys(data) : 'null/undefined')
+      
+      // Handle different response formats
+      if (data.success && data.rooms) {
+        console.log('✅ Found rooms:', data.rooms.length)
         setRooms(data.rooms || [])
+      } else if (Array.isArray(data)) {
+        // If response is directly an array
+        console.log('✅ Response is array, rooms:', data.length)
+        setRooms(data)
+      } else if (data.rooms && Array.isArray(data.rooms)) {
+        // If rooms is at root level
+        console.log('✅ Found rooms at root:', data.rooms.length)
+        setRooms(data.rooms)
+      } else {
+        console.warn('⚠️ Unexpected response format:', data)
+        setRooms([])
       }
     } catch (error) {
-      console.error('Error fetching rooms:', error)
+      console.error('❌ Error fetching rooms:', error)
+      setRooms([])
     } finally {
       setLoadingRooms(false)
     }
@@ -362,7 +383,12 @@ export default function HomePage() {
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
             </div>
-          ) : rooms.length > 0 ? (
+          ) : rooms.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400 text-lg">No rooms available at the moment.</p>
+              <p className="text-gray-500 text-sm mt-2">Please check back later.</p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {rooms.map((room, index) => (
                 <FadeInSection key={room.id} delay={index * 80}>
@@ -394,10 +420,6 @@ export default function HomePage() {
                   </Link>
                 </FadeInSection>
               ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-gray-400 text-lg">No rooms available at the moment.</p>
             </div>
           )}
         </div>

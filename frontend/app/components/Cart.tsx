@@ -5,7 +5,7 @@ import { X, Minus, Plus, ShoppingCart, Trash2, Loader2 } from "lucide-react";
 import { useCart } from "../hooks/useCart";
 import { getImageUrl, PLACEHOLDER_IMAGE } from "../utils/image";
 
-import { Product } from "../page";
+import { Product } from "../products/types";
 
 export interface CartItem
   extends Pick<Product, "id" | "name" | "price" | "main_image"> {
