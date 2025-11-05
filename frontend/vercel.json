@@ -9,9 +9,6 @@
       "memory": 1024
     }
   },
-  "limits": {
-    "maxRequestBodySize": 10485760
-  },
   "headers": [
     {
       "source": "/api/admin/menu",
