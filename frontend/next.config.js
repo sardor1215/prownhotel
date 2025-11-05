@@ -13,19 +13,21 @@ const nextConfig = {
     // Allow SVG images for placeholders
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Allow images from these domains
-    domains: [
-      'localhost',
-      'showercabin-ecommerce.vercel.app',
-      'showercabin-backend.vercel.app',
-      'royal-shower.vercel.app',
-      'royal-shower-backend.vercel.app',
-      'images.unsplash.com',
-      'orbashower.com',
-      'api.orbashower.com'
-    ],
-    // Allow any image from any domain (use with caution)
+    // Use remotePatterns instead of deprecated domains
     remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      // Allow images from any HTTP/HTTPS domain (for backend images)
       {
         protocol: 'http',
         hostname: '**',
@@ -40,24 +42,26 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ['image/webp', 'image/avif'],
   },
+  // Allow cross-origin requests from any origin (for development)
+  allowedDevOrigins: ['*'],
   env: {
     API_URL: process.env.API_URL || 'http://localhost:5000/api',
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
   },
   async rewrites() {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || (isProduction ? 'https://orbashower.com' : 'http://localhost:5000');
+    // Get backend URL from environment variable or use default
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     
     return [
       // Note: Next.js API routes in app/api/ take precedence over rewrites
       // Only add specific rewrites here for routes that don't have Next.js API handlers
       // Most API routes are handled by Next.js API routes which proxy to the backend
       
-      // Add rewrite for direct uploads in production
-      ...(isProduction ? [{
+      // Add rewrite for direct uploads
+      {
         source: '/uploads/:path*',
         destination: `${backendUrl}/uploads/:path*`,
-      }] : []),
+      },
     ]
   },
   async headers() {

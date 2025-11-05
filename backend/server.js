@@ -38,18 +38,11 @@ const PORT = process.env.PORT || 5000;
 // Trust first proxy (important when behind load balancers like Nginx or when using rate limiting)
 app.set("trust proxy", 1);
 
-// Security middleware - configure Helmet to allow images from same origin and cross-origin
+// Security middleware - configure Helmet for API server
+// Note: CSP is primarily for frontend pages, so we disable it for API server
+// or make it very permissive to allow all connections
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "blob:", "http://localhost:5000", "https://orbashower.com", "*"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "http://localhost:5000", "https://orbashower.com"],
-    },
-  },
+  contentSecurityPolicy: false, // Disable CSP for API server (it's for frontend pages)
   crossOriginEmbedderPolicy: false, // Allow cross-origin images
   crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resource loading
 }));
@@ -69,45 +62,31 @@ app.use(limiter);
 //   'https://www.orbashower.com',
 //   /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/
 // ];
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://orbashower.com",
-  "http://192.168.0.109:3000",
-  "https://www.orbashower.com",
-  /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/,
-];
-
-// CORS configuration function
+// CORS configuration - Allow all origins
 const configureCors = (req, res, next) => {
   const origin = req.headers.origin;
 
-  // Check if the request origin is in the allowed origins
-  const isAllowed = allowedOrigins.some((allowedOrigin) => {
-    if (typeof allowedOrigin === "string") {
-      return origin === allowedOrigin;
-    } else if (allowedOrigin instanceof RegExp) {
-      return allowedOrigin.test(origin);
-    }
-    return false;
-  });
-
-  // Set CORS headers
-  if (isAllowed && origin) {
+  // Allow all origins
+  if (origin) {
     res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS, HEAD"
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With, Range"
-    );
-    res.header(
-      "Access-Control-Expose-Headers",
-      "Content-Range, X-Content-Range, Content-Length, Content-Type, X-Total-Count"
-    );
+  } else {
+    // If no origin header, allow all
+    res.header("Access-Control-Allow-Origin", "*");
   }
+  
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Range, Accept, Origin"
+  );
+  res.header(
+    "Access-Control-Expose-Headers",
+    "Content-Range, X-Content-Range, Content-Length, Content-Type, X-Total-Count"
+  );
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -131,22 +110,23 @@ app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Configure CORS middleware
+// Configure CORS middleware - Allow all origins
 app.use((req, res, next) => {
-  // Set specific origin for credentials support
+  // Allow all origins
   const origin = req.headers.origin;
-  if (
-    origin === "http://localhost:3000" ||
-    origin === "http://127.0.0.1:3000"
-  ) {
+  if (origin) {
     res.header("Access-Control-Allow-Origin", origin);
+  } else {
+    res.header("Access-Control-Allow-Origin", "*");
   }
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Range"
   );
   res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Expose-Headers", "Content-Range, X-Content-Range, Content-Length, Content-Type, X-Total-Count");
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -232,28 +212,13 @@ if (!fs.existsSync(uploadsPath)) {
 // Log the absolute path to uploads directory for debugging
 console.log("Serving static files from:", uploadsPath);
 
-// Configure CORS for static files
+// Configure CORS for static files - Allow all origins
 const staticCorsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "https://orbashower.com",
-      "https://www.orbashower.com",
-    ];
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true,
   methods: ["GET", "HEAD", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Range"],
-  exposedHeaders: ["Content-Length", "Content-Range"],
+  allowedHeaders: ["Content-Type", "Authorization", "Range", "Origin"],
+  exposedHeaders: ["Content-Length", "Content-Range", "Content-Type"],
   maxAge: 86400, // 24 hours
 };
 

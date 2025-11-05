@@ -1,8 +1,9 @@
 /**
  * Get the backend base URL for server-side API routes
- * Uses NEXT_PUBLIC_API_URL environment variable or falls back to production URL
+ * Auto-detects from environment variable or defaults to localhost
  */
 export function getBackendUrl(): string {
+  // First, try environment variable
   const apiUrl = process.env.NEXT_PUBLIC_API_URL
   
   if (apiUrl) {
@@ -10,8 +11,8 @@ export function getBackendUrl(): string {
     return apiUrl.replace(/\/api$/, '').replace(/\/$/, '')
   }
   
-  // Default fallback - update this to your production backend URL
-  return 'https://orbashower.com'
+  // Default to localhost:5000 for server-side
+  return 'http://localhost:5000'
 }
 
 /**
