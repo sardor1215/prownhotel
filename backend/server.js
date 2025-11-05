@@ -33,7 +33,7 @@ const adminRoomTypesRoutes = require("./routes/admin-room-types");
 const adminMenuRoutes = require("./routes/admin-menu");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Trust first proxy (important when behind load balancers like Nginx or when using rate limiting)
 app.set("trust proxy", 1);
