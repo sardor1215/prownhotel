@@ -26,19 +26,19 @@ export function getBackendUrl(): string {
       return 'http://localhost:5000'
     }
     
-    // For other hosts (like IP addresses), use same host with port 5000
+    // For other hosts (like IP addresses), use same host with port 5001
     if (currentHost.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-      // IP address detected
-      return `http://${currentHost}:5000`
+      // IP address detected - use port 5001 (nginx proxy to backend on 5002)
+      return `http://${currentHost}:5001`
     }
     
-    // For domain names, assume backend is on same domain but port 5000
+    // For domain names, assume backend is on same domain but port 5001
     // This is a fallback - should ideally use environment variable
-    return `http://${currentHost}:5000`
+    return `http://${currentHost}:5001`
   }
   
-  // Server-side: Default to localhost:5000
-  return 'http://localhost:5000'
+  // Server-side: Default to localhost:5001 (nginx proxy to backend on 5002)
+  return 'http://localhost:5001'
 }
 
 /**

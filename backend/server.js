@@ -33,7 +33,8 @@ const adminRoomTypesRoutes = require("./routes/admin-room-types");
 const adminMenuRoutes = require("./routes/admin-menu");
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+// Backend runs on port 5002 internally (nginx on 5001 proxies to this)
+const PORT = process.env.PORT || 5002;
 
 // Trust first proxy (important when behind load balancers like Nginx or when using rate limiting)
 app.set("trust proxy", 1);

@@ -58,11 +58,18 @@ function BookingContent() {
 
   const fetchRoom = async () => {
     try {
-      const response = await fetch(getApiUrl(`/api/rooms/${roomId}`))
+      // Use Next.js API route instead of direct backend call
+      const response = await fetch(`/api/rooms/${roomId}`)
       const data = await response.json()
       
-      if (data.success) {
+      // Handle different response formats
+      if (data.success && data.room) {
         setRoom(data.room)
+      } else if (data.id) {
+        // If room is at root level
+        setRoom(data)
+      } else {
+        toast.error('Room not found')
       }
     } catch (error) {
       console.error('Error fetching room:', error)

@@ -101,7 +101,8 @@ export default function HomePage() {
   const fetchRooms = async () => {
     try {
       setLoadingRooms(true)
-      const apiUrl = getApiUrl('/api/rooms?limit=4')
+      // Use Next.js API route instead of direct backend call to avoid CORS/mixed content issues
+      const apiUrl = '/api/rooms?limit=4'
       console.log('🔍 Fetching rooms from:', apiUrl)
       
       const response = await fetch(apiUrl)

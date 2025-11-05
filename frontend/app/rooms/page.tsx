@@ -46,11 +46,21 @@ function RoomsContent() {
       if (adults) params.append('adults', adults.toString())
       if (children) params.append('children', children.toString())
 
-      const response = await fetch(getApiUrl(`/api/rooms?${params.toString()}`))
+      // Use Next.js API route instead of direct backend call
+      const response = await fetch(`/api/rooms?${params.toString()}`)
       const data = await response.json()
       
-      if (data.success) {
+      // Handle different response formats
+      if (data.success && data.rooms) {
         setRooms(data.rooms)
+      } else if (Array.isArray(data)) {
+        // If response is directly an array
+        setRooms(data)
+      } else if (data.rooms && Array.isArray(data.rooms)) {
+        // If rooms is at root level
+        setRooms(data.rooms)
+      } else {
+        setRooms([])
       }
     } catch (error) {
       console.error('Error fetching rooms:', error)

@@ -11,8 +11,8 @@ export function getBackendUrl(): string {
     return apiUrl.replace(/\/api$/, '').replace(/\/$/, '')
   }
   
-  // Default to localhost:5000 for server-side
-  return 'http://localhost:5000'
+  // Default to localhost:5001 for server-side (nginx proxy to backend on 5002)
+  return 'http://localhost:5001'
 }
 
 /**
