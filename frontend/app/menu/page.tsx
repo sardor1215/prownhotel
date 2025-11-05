@@ -6,6 +6,9 @@ import { ArrowLeft, Download, FileText, Loader2, Phone, Mail, MapPin } from 'luc
 import { getBackendUrl } from '@/lib/backend-url'
 import FadeInSection from '@/components/FadeInSection'
 
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic'
+
 export default function MenuPage() {
   const [menuUrl, setMenuUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)

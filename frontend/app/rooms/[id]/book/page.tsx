@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -24,7 +24,7 @@ interface Room {
   amenities: Record<string, boolean>
 }
 
-export default function BookingPage() {
+function BookingContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -621,5 +621,17 @@ export default function BookingPage() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37]"></div>
+      </div>
+    }>
+      <BookingContent />
+    </Suspense>
   )
 }
