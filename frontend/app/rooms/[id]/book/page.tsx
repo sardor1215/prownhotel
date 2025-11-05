@@ -9,6 +9,8 @@ import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import FadeInSection from '@/components/FadeInSection'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/lib/i18n'
 
 interface Room {
   id: number
@@ -25,6 +27,8 @@ interface Room {
 }
 
 function BookingContent() {
+  const { language } = useLanguage()
+  const t = translations[language]
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -69,11 +73,11 @@ function BookingContent() {
         // If room is at root level
         setRoom(data)
       } else {
-        toast.error('Room not found')
+        toast.error(t.booking.roomNotFound)
       }
     } catch (error) {
       console.error('Error fetching room:', error)
-      toast.error('Failed to load room details')
+      toast.error(t.booking.failedToLoad)
     } finally {
       setLoading(false)
     }
@@ -93,7 +97,7 @@ function BookingContent() {
     e.preventDefault()
     
     if (!checkIn || !checkOut) {
-      toast.error('Please select check-in and check-out dates')
+      toast.error(t.booking.selectDates)
       return
     }
 
@@ -266,12 +270,12 @@ function BookingContent() {
         <FadeInSection direction="up" className="mb-8">
           <div className="inline-flex items-center gap-2 bg-[#D4AF37]/10 px-4 py-2 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-            <span className="text-[#D4AF37] font-semibold text-sm">Complete Your Reservation</span>
+            <span className="text-[#D4AF37] font-semibold text-sm">{t.booking.completeReservation}</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-2">
-            Book Your Stay
+            {t.booking.bookYourStay}
           </h1>
-          <p className="text-xl text-gray-600">Fill in your details to confirm your reservation</p>
+          <p className="text-xl text-gray-600">{t.booking.fillDetails}</p>
         </FadeInSection>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -282,7 +286,7 @@ function BookingContent() {
                 <div className="group">
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                     <User className="w-4 h-4 text-[#D4AF37]" />
-                    Full Name *
+                    {t.booking.fullNameLabel}
                   </label>
                   <input
                     type="text"
@@ -291,7 +295,7 @@ function BookingContent() {
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all duration-300 group-hover:border-[#D4AF37]/30"
-                    placeholder="Name Surname"
+                    placeholder={t.booking.fullName}
                   />
                 </div>
 
@@ -299,7 +303,7 @@ function BookingContent() {
                   <div className="group">
                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                       <Mail className="w-4 h-4 text-[#D4AF37]" />
-                      Email Address *
+                      {t.booking.emailAddressLabel}
                     </label>
                     <input
                       type="email"
@@ -308,14 +312,14 @@ function BookingContent() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all duration-300 group-hover:border-[#D4AF37]/30"
-                      placeholder="Email"
+                      placeholder={t.booking.emailPlaceholder}
                     />
                   </div>
 
                   <div className="group">
                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                       <Phone className="w-4 h-4 text-[#D4AF37]" />
-                      Phone Number *
+                      {t.booking.phoneNumberLabel}
                     </label>
                     <input
                       type="tel"
@@ -324,7 +328,7 @@ function BookingContent() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all duration-300 group-hover:border-[#D4AF37]/30"
-                      placeholder="+90 555 123 4567"
+                      placeholder={t.booking.phonePlaceholder}
                     />
                   </div>
                 </div>
@@ -332,7 +336,7 @@ function BookingContent() {
                 <div className="group">
                   <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-[#D4AF37]" />
-                    Special Requests (Optional)
+                    {t.booking.specialRequests}
                   </label>
                   <textarea
                     name="special_requests"
@@ -340,7 +344,7 @@ function BookingContent() {
                     onChange={handleInputChange}
                     rows={4}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all duration-300 group-hover:border-[#D4AF37]/30 resize-none"
-                    placeholder="Any special requirements or requests..."
+                    placeholder={t.booking.specialRequestsPlaceholder}
                   />
                 </div>
 
@@ -352,12 +356,12 @@ function BookingContent() {
                   {submitting ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                      <span>Processing...</span>
+                      <span>{t.booking.processing}</span>
                     </>
                   ) : (
                     <>
                       <Check className="w-5 h-5" />
-                      <span>Confirm Reservation</span>
+                      <span>{t.booking.confirmReservation}</span>
                     </>
                   )}
                 </button>
@@ -370,7 +374,7 @@ function BookingContent() {
             <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-24 border border-gray-100">
               <div className="flex items-center gap-2 mb-6">
                 <Sparkles className="w-5 h-5 text-[#D4AF37]" />
-                <h2 className="text-xl font-serif font-bold text-gray-900">Booking Summary</h2>
+                <h2 className="text-xl font-serif font-bold text-gray-900">{t.booking.bookingSummary}</h2>
               </div>
 
               {/* Room Image Gallery */}
@@ -453,36 +457,36 @@ function BookingContent() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                      Check-in
+                      {t.booking.checkIn}
                     </span>
-                    <span className="font-semibold text-gray-900">{new Date(checkIn).toLocaleDateString()}</span>
+                    <span className="font-semibold text-gray-900">{checkIn ? new Date(checkIn).toLocaleDateString() : t.booking.invalidDate}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                      Check-out
+                      {t.booking.checkOut}
                     </span>
-                    <span className="font-semibold text-gray-900">{new Date(checkOut).toLocaleDateString()}</span>
+                    <span className="font-semibold text-gray-900">{checkOut ? new Date(checkOut).toLocaleDateString() : t.booking.invalidDate}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 flex items-center gap-2">
                       <Users className="w-4 h-4 text-[#D4AF37]" />
-                      Guests
+                      {t.booking.guests}
                     </span>
-                    <span className="font-semibold text-gray-900">{adults} adults, {children} children</span>
+                    <span className="font-semibold text-gray-900">{adults} {t.booking.adults}, {children} {t.booking.children}</span>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">{formatPrice(room.price_per_night)} × {nights} nights</span>
+                    <span className="text-gray-600">{formatPrice(room.price_per_night)} × {nights} {t.booking.nights}</span>
                     <span className="font-semibold">{formatPrice(parseFloat(String(room.price_per_night)) * nights)}</span>
                   </div>
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg text-gray-900">Total</span>
+                    <span className="font-bold text-lg text-gray-900">{t.booking.total}</span>
                     <span className="font-black text-3xl text-[#D4AF37]">
                       {formatPrice(totalAmount)}
                     </span>
@@ -496,8 +500,8 @@ function BookingContent() {
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-green-900 text-sm mb-1">Free Cancellation</p>
-                  <p className="text-green-700 text-xs">Cancel up to 24 hours before check-in</p>
+                  <p className="font-semibold text-green-900 text-sm mb-1">{t.booking.freeCancellation}</p>
+                  <p className="text-green-700 text-xs">{t.booking.cancelPolicy}</p>
                 </div>
               </div>
             </div>

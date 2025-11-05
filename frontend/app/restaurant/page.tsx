@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Clock, Utensils, Coffee, Home, Phone, Mail, MapPin } from 'lucide-react'
+import Image from 'next/image'
+import { Clock, Utensils, Coffee, Home, Phone, Mail, MapPin, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
 import { getBackendUrl } from '@/lib/backend-url'
 import FadeInSection from '@/components/FadeInSection'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -11,6 +12,52 @@ import { translations } from '@/lib/i18n'
 export default function RestaurantPage() {
   const { language } = useLanguage()
   const t = translations[language]
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+
+  // Restaurant images for carousel
+  const restaurantImages = [
+    '/restaurant/BGRK3409.JPG',
+    '/restaurant/IMGM8809.JPG',
+    '/restaurant/IMGM8813.JPG',
+  ]
+
+  const nextImage = () => {
+    setCarouselIndex((prev) => (prev + 1) % restaurantImages.length)
+  }
+
+  const prevImage = () => {
+    setCarouselIndex((prev) => (prev - 1 + restaurantImages.length) % restaurantImages.length)
+  }
+
+  // Lightbox functions
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+  }
+
+  const nextLightboxImage = () => {
+    setLightboxIndex((prev) => (prev + 1) % restaurantImages.length)
+  }
+
+  const prevLightboxImage = () => {
+    setLightboxIndex((prev) => (prev - 1 + restaurantImages.length) % restaurantImages.length)
+  }
+
+  // Auto-play carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % restaurantImages.length)
+    }, 5000) // Change image every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [restaurantImages.length])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Navigation */}
@@ -144,16 +191,94 @@ export default function RestaurantPage() {
             </FadeInSection>
           </FadeInSection>
 
-          {/* Right Column - Image */}
+          {/* Right Column - Image Carousel */}
           <FadeInSection direction="right" className="relative">
-            <div className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+            <div 
+              className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl group cursor-pointer"
+              onClick={() => openLightbox(carouselIndex)}
+            >
+              {/* Zoom Overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 z-20">
+                <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
+                  <ZoomIn className="w-8 h-8 text-white" />
+                </div>
+              </div>
+
+              {/* Carousel Images */}
+              {restaurantImages.map((image, index) => (
+                <div
+                  key={index}
+                  className={`absolute inset-0 transition-opacity duration-1000 ${
+                    index === carouselIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <Image
+                    src={image}
+                    alt={`${t.restaurant.lounge.title} - ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+
+              {/* Overlay with text */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-900/60 to-gray-800/80 flex items-center justify-center">
                 <div className="text-center text-white p-8">
                   <Coffee className="w-24 h-24 mx-auto mb-4 text-[#D4AF37]" />
                   <h3 className="text-3xl font-serif font-bold mb-2">{t.restaurant.lounge.title}</h3>
                   <p className="text-gray-300">{t.restaurant.lounge.subtitle}</p>
                 </div>
               </div>
+
+              {/* Navigation Buttons */}
+              {restaurantImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      prevImage()
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      nextImage()
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+
+                  {/* Dot Indicators */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                    {restaurantImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCarouselIndex(index)
+                        }}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          index === carouselIndex
+                            ? 'bg-[#D4AF37] w-8'
+                            : 'bg-white/50 hover:bg-white/70'
+                        }`}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Image Counter */}
+                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm z-10">
+                    {carouselIndex + 1} / {restaurantImages.length}
+                  </div>
+                </>
+              )}
             </div>
           </FadeInSection>
         </div>
@@ -187,6 +312,60 @@ export default function RestaurantPage() {
           </div>
         </FadeInSection>
       </div>
+
+      {/* Restaurant Lightbox Modal */}
+      {lightboxOpen && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4"
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 text-white hover:text-[#D4AF37] transition-colors z-50"
+            aria-label="Close lightbox"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            <img
+              src={restaurantImages[lightboxIndex]}
+              alt={`${t.restaurant.lounge.title} - ${lightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            {restaurantImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    prevLightboxImage()
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    nextLightboxImage()
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
+                  {lightboxIndex + 1} / {restaurantImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-black text-white py-16 mt-16">

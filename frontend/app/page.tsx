@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, Send, Bed, Home } from 'lucide-react'
+import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, ChevronLeft, Send, Bed, Home, ZoomIn } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import toast from 'react-hot-toast'
@@ -40,6 +40,54 @@ export default function HomePage() {
     message: ''
   })
   const [submittingContact, setSubmittingContact] = useState(false)
+  const [experienceCarouselIndex, setExperienceCarouselIndex] = useState(0)
+  const [experienceLightboxOpen, setExperienceLightboxOpen] = useState(false)
+  const [experienceLightboxIndex, setExperienceLightboxIndex] = useState(0)
+
+  // Hotel images for experience carousel
+  const hotelImages = [
+    '/hotel_img/BGRK3368.JPG',
+    '/hotel_img/BGRK3409.JPG',
+    '/hotel_img/BGRK3409 (1).JPG',
+    '/hotel_img/IMGM8778.JPG',
+    '/hotel_img/IMGM8809.JPG',
+    '/hotel_img/IMGM8827.JPG',
+  ]
+
+  const nextExperienceImage = () => {
+    setExperienceCarouselIndex((prev) => (prev + 1) % hotelImages.length)
+  }
+
+  const prevExperienceImage = () => {
+    setExperienceCarouselIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length)
+  }
+
+  // Auto-play carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setExperienceCarouselIndex((prev) => (prev + 1) % hotelImages.length)
+    }, 5000) // Change image every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [hotelImages.length])
+
+  // Lightbox functions for experience carousel
+  const openExperienceLightbox = (index: number) => {
+    setExperienceLightboxIndex(index)
+    setExperienceLightboxOpen(true)
+  }
+
+  const closeExperienceLightbox = () => {
+    setExperienceLightboxOpen(false)
+  }
+
+  const nextExperienceLightboxImage = () => {
+    setExperienceLightboxIndex((prev) => (prev + 1) % hotelImages.length)
+  }
+
+  const prevExperienceLightboxImage = () => {
+    setExperienceLightboxIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length)
+  }
 
   // Smooth scroll for anchor links
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -249,7 +297,7 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 z-0">
               <Image
-            src="/imgtouse/IMGM8943.JPG"
+            src="/hotel_img/IMGM8827.JPG"
             alt="Crown Salamis Hotel"
                 fill
                 className="object-cover"
@@ -416,11 +464,38 @@ export default function HomePage() {
               </Link>
             </FadeInSection>
 
-            {/* Right Column - Visual Element */}
+            {/* Right Column - Visual Element with Carousel */}
             <FadeInSection direction="right" className="relative">
-              <div className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 to-gray-900/80"></div>
-                <div className="absolute inset-0 flex items-center justify-center p-8">
+              <div 
+                className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl group cursor-pointer"
+                onClick={() => openExperienceLightbox(experienceCarouselIndex)}
+              >
+                {/* Carousel Images */}
+                {hotelImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${
+                      index === experienceCarouselIndex ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${t.about.experience.title} - ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+
+                {/* Zoom Overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 z-20">
+                  <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
+                    <ZoomIn className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+
+                {/* Overlay with text */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/20 to-gray-900/80 flex items-center justify-center p-8">
                   <div className="text-center space-y-6">
                     <div className="w-24 h-24 mx-auto bg-[#D4AF37]/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-[#D4AF37]/50">
                       <Star className="w-12 h-12 text-[#D4AF37]" />
@@ -446,11 +521,115 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Navigation Buttons */}
+                {hotelImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        prevExperienceImage()
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        nextExperienceImage()
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+
+                    {/* Dot Indicators */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                      {hotelImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setExperienceCarouselIndex(index)
+                          }}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            index === experienceCarouselIndex
+                              ? 'bg-[#D4AF37] w-8'
+                              : 'bg-white/50 hover:bg-white/70'
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Image Counter */}
+                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm z-10">
+                      {experienceCarouselIndex + 1} / {hotelImages.length}
+                    </div>
+                  </>
+                )}
               </div>
             </FadeInSection>
           </div>
         </div>
       </section>
+
+      {/* Experience Lightbox Modal */}
+      {experienceLightboxOpen && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4"
+          onClick={closeExperienceLightbox}
+        >
+          <button
+            onClick={closeExperienceLightbox}
+            className="absolute top-4 right-4 text-white hover:text-[#D4AF37] transition-colors z-50"
+            aria-label="Close lightbox"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            <img
+              src={hotelImages[experienceLightboxIndex]}
+              alt={`${t.about.experience.title} - ${experienceLightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            {hotelImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    prevExperienceLightboxImage()
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    nextExperienceLightboxImage()
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
+                  {experienceLightboxIndex + 1} / {hotelImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Rooms Section - Black Background */}
       <section className="py-20 bg-black text-white">
@@ -582,7 +761,7 @@ export default function HomePage() {
             {/* The Food */}
             <FadeInSection direction="up" className="relative h-96 rounded-lg overflow-hidden group">
               <Image
-                src="/imgtouse/IMGM8814.JPG"
+                src="/hotel_img/IMGM8809.JPG"
                 alt="The Food"
                 fill
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -600,7 +779,7 @@ export default function HomePage() {
             {/* Rest well / Sleep well */}
             <FadeInSection direction="up" delay={150} className="relative h-96 rounded-lg overflow-hidden group">
                 <Image
-                src="/imgtouse/IMGM8778.JPG"
+                src="/hotel_img/IMGM8778.JPG"
                 alt="Rest well Sleep well"
                   fill
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -726,10 +905,9 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Hotel Info */}
             <div>
-              <h3 className="text-2xl font-serif text-white mb-4">CROWN SALAMIS HOTEL</h3>
+              <h3 className="text-2xl font-serif text-white mb-4">{t.footer.hotelName}</h3>
               <p className="text-gray-300 mb-4">
-                Crown Salamis Hotel offers one of the most special accommodation experiences in Famagusta. 
-                We are delighted to host you.
+                {t.footer.description}
               </p>
               <div className="space-y-2 text-gray-400">
                 <p className="flex items-center gap-2">
@@ -749,7 +927,7 @@ export default function HomePage() {
             
             {/* Our Rooms */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Our Rooms</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.ourRooms}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><Link href="/rooms/standard" className="hover:text-[#D4AF37] transition-colors">Standard Room</Link></li>
                 <li><Link href="/rooms/family" className="hover:text-[#D4AF37] transition-colors">Family Room</Link></li>
@@ -760,16 +938,16 @@ export default function HomePage() {
             
             {/* Other Links */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Other Links</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.otherLinks}</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="#about" className="hover:text-[#D4AF37] transition-colors">About Us</Link></li>
-                <li><Link href="#contact" className="hover:text-[#D4AF37] transition-colors">Opportunities & Campaigns</Link></li>
+                <li><Link href="#about" className="hover:text-[#D4AF37] transition-colors">{t.nav.about}</Link></li>
+                <li><Link href="#contact" className="hover:text-[#D4AF37] transition-colors">{t.footer.opportunities}</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>Designed and Powered by SE Lab</p>
+            <p>{t.footer.designedBy}</p>
           </div>
         </div>
       </footer>

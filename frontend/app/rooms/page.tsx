@@ -8,6 +8,8 @@ import { Users, Calendar, Star, ChevronRight, Search, Filter, Sparkles, ArrowLef
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import FadeInSection from '@/components/FadeInSection'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/lib/i18n'
 
 interface Room {
   id: number
@@ -24,6 +26,8 @@ interface Room {
 }
 
 function RoomsContent() {
+  const { language } = useLanguage()
+  const t = translations[language]
   const searchParams = useSearchParams()
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
@@ -170,14 +174,14 @@ function RoomsContent() {
             <div className="flex items-center gap-2 mb-6">
               <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition">
                 <ArrowLeft className="w-5 h-5" />
-                <span>Back to Home</span>
+                <span>{t.rooms.page.backToHome}</span>
               </Link>
             </div>
             <h1 className="text-5xl md:text-7xl font-serif font-bold mb-4">
-              Our Rooms
+              {t.rooms.page.title}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl">
-              Experience luxury and comfort in our elegantly designed rooms
+              {t.rooms.page.subtitle}
             </p>
           </FadeInSection>
         </div>
@@ -189,14 +193,14 @@ function RoomsContent() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Search className="w-5 h-5 text-[#D4AF37]" />
-              <h2 className="text-xl font-bold text-gray-900">Search Available Rooms</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t.rooms.page.searchAvailableRooms}</h2>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="lg:hidden flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
             >
               <Filter className="w-4 h-4" />
-              <span>Filters</span>
+              <span>{t.rooms.page.filters}</span>
             </button>
           </div>
           
@@ -204,7 +208,7 @@ function RoomsContent() {
             <div className="group">
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                Check-in
+                {t.rooms.page.checkIn}
               </label>
               <input
                 type="date"
@@ -218,7 +222,7 @@ function RoomsContent() {
             <div className="group">
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                Check-out
+                {t.rooms.page.checkOut}
               </label>
               <input
                 type="date"
@@ -232,7 +236,7 @@ function RoomsContent() {
             <div className="group">
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#D4AF37]" />
-                Adults
+                {t.rooms.adults}
               </label>
               <select
                 value={adults}
@@ -248,7 +252,7 @@ function RoomsContent() {
             <div className="group">
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#D4AF37]" />
-                Children
+                {t.rooms.children}
               </label>
               <select
                 value={children}
@@ -267,7 +271,7 @@ function RoomsContent() {
                 className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 <Search className="w-5 h-5" />
-                <span>Search</span>
+                <span>{t.rooms.page.search}</span>
               </button>
             </div>
           </div>
@@ -279,20 +283,20 @@ function RoomsContent() {
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
-            <p className="mt-4 text-gray-600 text-lg">Loading rooms...</p>
+            <p className="mt-4 text-gray-600 text-lg">{t.rooms.page.loading}</p>
           </div>
         ) : rooms.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
               <Search className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No rooms available</h3>
-            <p className="text-gray-600 mb-6">Try different dates or contact us directly</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.rooms.page.noRoomsTitle}</h3>
+            <p className="text-gray-600 mb-6">{t.rooms.page.noRoomsDescription}</p>
             <Link
               href="/#contact"
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition"
             >
-              Contact Us
+              {t.rooms.page.contactUs}
             </Link>
           </div>
         ) : (
@@ -416,7 +420,7 @@ function RoomsContent() {
                       <div className="flex flex-wrap gap-3 mb-6">
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium">
                           <Users className="w-4 h-4" />
-                          <span>Max {room.max_adults} adults, {room.max_children} children</span>
+                          <span>Maksimum {room.max_adults} {t.rooms.page.maxAdults}, {room.max_children} {t.rooms.page.maxChildren}</span>
                         </div>
                         {room.size_sqm && (
                           <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium">
@@ -450,14 +454,14 @@ function RoomsContent() {
                           {formatPrice(room.price_per_night)}
                         </div>
                         <div className="text-sm text-gray-500">
-                          per night {nights > 0 && `• ${nights} nights = ${formatPrice(parseFloat(String(room.price_per_night)) * nights)}`}
+                          {t.rooms.page.perNight} {nights > 0 && `• ${nights} ${t.rooms.page.nights} = ${formatPrice(parseFloat(String(room.price_per_night)) * nights)}`}
                         </div>
                       </div>
                       <Link
                         href={`/rooms/${room.id}/book?check_in=${checkIn}&check_out=${checkOut}&adults=${adults}&children=${children}`}
                         className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 group"
                       >
-                        <span>Book Now</span>
+                        <span>{t.rooms.page.bookNow}</span>
                         <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </div>
@@ -479,16 +483,16 @@ function RoomsContent() {
             </div>
             <div className="relative z-10">
               <Sparkles className="w-12 h-12 mx-auto mb-4 text-[#D4AF37]" />
-              <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Need Help Choosing?</h2>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{t.rooms.page.needHelp}</h2>
               <p className="text-xl text-gray-300 mb-6 max-w-2xl mx-auto">
-                Our team is here to help you find the perfect room for your stay
+                {t.rooms.page.helpDescription}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/#contact"
                 className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <span>Contact Us</span>
+                <span>{t.rooms.page.contactUs}</span>
                 <ChevronRight className="w-5 h-5" />
               </Link>
               </div>
@@ -503,10 +507,9 @@ function RoomsContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Hotel Info */}
             <div>
-              <h3 className="text-2xl font-serif text-white mb-4">CROWN SALAMIS HOTEL</h3>
+              <h3 className="text-2xl font-serif text-white mb-4">{t.footer.hotelName}</h3>
               <p className="text-gray-300 mb-4">
-                Crown Salamis Hotel offers one of the most special accommodation experiences in Famagusta. 
-                We are delighted to host you.
+                {t.footer.description}
               </p>
               <div className="space-y-2 text-gray-400">
                 <p className="flex items-center gap-2">
@@ -526,7 +529,7 @@ function RoomsContent() {
             
             {/* Our Rooms */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Our Rooms</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.ourRooms}</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><Link href="/rooms/standard" className="hover:text-[#D4AF37] transition-colors">Standard Room</Link></li>
                 <li><Link href="/rooms/family" className="hover:text-[#D4AF37] transition-colors">Family Room</Link></li>
@@ -537,9 +540,9 @@ function RoomsContent() {
             
             {/* Other Links */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Other Links</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.otherLinks}</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/restaurant" className="hover:text-[#D4AF37] transition-colors">Restaurant</Link></li>
+                <li><Link href="/restaurant" className="hover:text-[#D4AF37] transition-colors">{t.nav.restaurant}</Link></li>
                 <li>
                   <a 
                     href="#" 
@@ -551,26 +554,26 @@ function RoomsContent() {
                     if (data.success && data.menu) {
                       window.open(`${getBackendUrl()}${data.menu.url}`, '_blank')
                         } else {
-                          alert('Menu not available')
+                          alert(t.restaurant.footer.menuNotAvailable)
                         }
                       } catch (error) {
                         console.error('Error fetching menu:', error)
-                        alert('Failed to load menu')
+                        alert(t.restaurant.footer.failedToLoad)
                       }
                     }}
                     className="hover:text-[#D4AF37] transition-colors cursor-pointer"
                   >
-                    Menu
+                    {t.nav.menu}
                   </a>
                 </li>
-                <li><Link href="/#about" className="hover:text-[#D4AF37] transition-colors">About Us</Link></li>
-                <li><Link href="/#contact" className="hover:text-[#D4AF37] transition-colors">Contact Us</Link></li>
+                <li><Link href="/#about" className="hover:text-[#D4AF37] transition-colors">{t.nav.about}</Link></li>
+                <li><Link href="/#contact" className="hover:text-[#D4AF37] transition-colors">{t.nav.contact}</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>Designed and Powered by SE Lab</p>
+            <p>{t.footer.designedBy}</p>
           </div>
         </div>
       </footer>
