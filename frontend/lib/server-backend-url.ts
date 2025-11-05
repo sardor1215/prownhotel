@@ -11,7 +11,8 @@ export function getBackendUrl(): string {
     return apiUrl.replace(/\/api$/, '').replace(/\/$/, '')
   }
   
-  // Default to localhost:5001 for server-side (nginx proxy to backend on 5002)
+  // Default to localhost:5001 for server-side (nginx proxy on 5001, backend on 5002)
+  // This allows nginx to add CORS headers and handle static files
   return 'http://localhost:5001'
 }
 

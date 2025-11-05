@@ -34,6 +34,7 @@ const adminMenuRoutes = require("./routes/admin-menu");
 
 const app = express();
 // Backend runs on port 5002 internally (nginx on 5001 proxies to this)
+// User has another server on 5000, so we use 5002 for backend internally
 const PORT = process.env.PORT || 5002;
 
 // Trust first proxy (important when behind load balancers like Nginx or when using rate limiting)

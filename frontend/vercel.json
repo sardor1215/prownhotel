@@ -1,5 +1,35 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs"
+  "functions": {
+    "app/api/admin/menu/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "app/api/admin/room-uploads/single/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "limits": {
+    "maxRequestBodySize": 10485760
+  },
+  "headers": [
+    {
+      "source": "/api/admin/menu",
+      "headers": [
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
+      ]
+    },
+    {
+      "source": "/api/admin/room-uploads/single",
+      "headers": [
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
+      ]
+    }
+  ]
 }

@@ -237,7 +237,8 @@ export default function EditRoomPage() {
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const uploadResponse = await fetch(getApiUrl('/api/admin/room-uploads/single'), {
+      // Use Next.js API route instead of direct backend call
+      const uploadResponse = await fetch('/api/admin/room-uploads/single', {
         method: 'POST',
         credentials: 'include',
         headers,
