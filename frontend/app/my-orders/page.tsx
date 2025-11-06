@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Package, Calendar, DollarSign, Eye, X, AlertCircle, Loader2 } from 'lucide-react'
-import { formatDateTime } from '@/lib/utils'
+import { formatDate, formatDateTime } from '@/lib/utils'
 
 interface Order {
   id: number
