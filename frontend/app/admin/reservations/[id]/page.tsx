@@ -7,6 +7,7 @@ import { Calendar, User, Mail, Phone, ArrowLeft, CheckCircle, XCircle, Clock } f
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/formatPrice'
 import { getApiUrl } from '@/lib/backend-url'
+import { formatDate } from '@/lib/utils'
 
 interface Reservation {
   id: number
@@ -115,13 +116,6 @@ export default function ReservationDetailPage() {
     )
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
 
   const calculateNights = (checkIn: string, checkOut: string) => {
     const start = new Date(checkIn)

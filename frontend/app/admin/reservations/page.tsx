@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, Calendar, Eye, Clock, CheckCircle, XCircle, AlertCircle, Filter, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatDate } from '@/lib/utils'
 
 interface Reservation {
   id: number
@@ -319,11 +320,11 @@ export default function AdminReservationsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-stone-50 rounded-lg mb-4">
                     <div>
                       <p className="text-xs text-zinc-600 mb-1">Check-in</p>
-                      <p className="font-semibold text-zinc-900">{checkIn.toLocaleDateString()}</p>
+                      <p className="font-semibold text-zinc-900">{formatDate(reservation.check_in_date)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-zinc-600 mb-1">Check-out</p>
-                      <p className="font-semibold text-zinc-900">{checkOut.toLocaleDateString()}</p>
+                      <p className="font-semibold text-zinc-900">{formatDate(reservation.check_out_date)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-zinc-600 mb-1">Guests</p>
@@ -351,7 +352,7 @@ export default function AdminReservationsPage() {
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-stone-200">
                     <div className="text-xs text-zinc-500">
-                      Booked on {new Date(reservation.created_at).toLocaleDateString()} at {new Date(reservation.created_at).toLocaleTimeString()}
+                      Booked on {formatDate(reservation.created_at)} at {new Date(reservation.created_at).toLocaleTimeString()}
                     </div>
                     <div className="flex items-center gap-3">
                       {getStatusActions(reservation)}

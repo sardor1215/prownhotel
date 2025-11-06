@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, ChevronLeft, Send, Bed, Home, ZoomIn } from 'lucide-react'
+import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, ChevronLeft, Send, Bed, Home, ZoomIn, Utensils, FileText, Info, Search, Car, Wifi, Coffee, Bike, Ship, Baby, Plane, Luggage, Moon, Shirt, Wind, Layout, Bell, GlassWater, Tv, Droplet, Waves, Building2, Ban, Cigarette, Globe } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import toast from 'react-hot-toast'
@@ -26,8 +26,16 @@ export default function HomePage() {
   const { language, setLanguage } = useLanguage()
   const t = translations[language]
   
-  const [checkIn, setCheckIn] = useState('')
-  const [checkOut, setCheckOut] = useState('')
+  // Set default dates: today for check-in, tomorrow for check-out (1 night)
+  const getToday = () => new Date().toISOString().split('T')[0]
+  const getTomorrow = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
+
+  const [checkIn, setCheckIn] = useState(getToday())
+  const [checkOut, setCheckOut] = useState(getTomorrow())
   const [adults, setAdults] = useState(2)
   const [children, setChildren] = useState(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -43,6 +51,8 @@ export default function HomePage() {
   const [experienceCarouselIndex, setExperienceCarouselIndex] = useState(0)
   const [experienceLightboxOpen, setExperienceLightboxOpen] = useState(false)
   const [experienceLightboxIndex, setExperienceLightboxIndex] = useState(0)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
 
   // Hotel images for experience carousel
   const hotelImages = [
@@ -147,9 +157,37 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Load video when component mounts (hero section is above the fold)
+  useEffect(() => {
+    if (videoRef.current && !videoLoaded) {
+      // Load video immediately since it's in the hero section
+      videoRef.current.load()
+      setVideoLoaded(true)
+    }
+  }, [videoLoaded])
+
   useEffect(() => {
     fetchRooms()
   }, [])
+
+  // Auto-update check-out when check-in changes to ensure it's at least 1 night
+  useEffect(() => {
+    if (checkIn) {
+      const checkInDate = new Date(checkIn)
+      const checkOutDate = checkOut ? new Date(checkOut) : null
+      
+      // If check-out is before or equal to check-in, set it to next day
+      if (!checkOutDate || checkOutDate <= checkInDate) {
+        const nextDay = new Date(checkInDate)
+        nextDay.setDate(nextDay.getDate() + 1)
+        const nextDayStr = nextDay.toISOString().split('T')[0]
+        if (nextDayStr !== checkOut) {
+          setCheckOut(nextDayStr)
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkIn]) // Only depend on checkIn to avoid loops
 
   const fetchRooms = async () => {
     try {
@@ -203,61 +241,86 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white shadow-md' : 'bg-transparent'
+      {/* Navigation - Premium Design */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${
+        scrolled 
+          ? 'bg-white/95 shadow-2xl border-b border-gray-100' 
+          : 'bg-gradient-to-b from-black/50 to-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-2xl md:text-3xl font-serif text-[#D4AF37] font-bold">
-                  CROWN
-                </span>
-              <span className={`text-2xl md:text-3xl font-serif font-bold ${scrolled ? 'text-gray-900' : 'text-white'}`}>
-                Salamis Hotel
-              </span>
+          <div className="flex justify-between items-center h-24">
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/iconfornav.png"
+                alt="Crown Salamis Hotel Logo"
+                width={180}
+                height={60}
+                className="object-contain h-12 md:h-16 group-hover:scale-105 transition-transform duration-300 drop-shadow-lg"
+                priority
+              />
             </Link>
             
-            <div className="hidden lg:flex items-center space-x-8">
-              <Link href="/" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
-                {t.nav.home}
+            <div className="hidden lg:flex items-center space-x-2">
+              <Link href="/rooms" className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}>
+                <Bed className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.rooms}</span>
               </Link>
-              <Link href="/rooms" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
-                {t.nav.rooms}
-              </Link>
-              <Link href="/restaurant" className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors`}>
-                {t.nav.restaurant}
+              <Link href="/restaurant" className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}>
+                <Utensils className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.restaurant}</span>
               </Link>
               <a 
                 href="#" 
                 onClick={handleMenuClick}
-                className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}
+                className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}
               >
-                {t.nav.menu}
+                <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.menu}</span>
               </a>
-              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}>
-                {t.nav.about}
+              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}>
+                <Info className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.about}</span>
               </a>
-              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className={`${scrolled ? 'text-gray-700' : 'text-white'} hover:text-[#D4AF37] font-medium transition-colors cursor-pointer`}>
-                {t.nav.contact}
+              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}>
+                <Phone className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.contact}</span>
               </a>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 ml-4">
                 <button
                   onClick={() => setLanguage('en')}
-                  className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium hover:text-[#D4AF37] transition-colors ${
-                    language === 'en' ? 'font-bold' : ''
+                  className={`p-2 rounded-xl transition-all duration-300 transform hover:scale-110 ${
+                    language === 'en' 
+                      ? 'bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/20 ring-2 ring-[#D4AF37] shadow-lg' 
+                      : scrolled 
+                        ? 'hover:bg-gray-100 hover:shadow-md' 
+                        : 'hover:bg-white/20 backdrop-blur-sm'
                   }`}
+                  title="English"
+                  aria-label="Switch to English"
                 >
-                  English
+                  <img 
+                    src="https://flagcdn.com/w20/gb.png" 
+                    alt="English" 
+                    className="w-6 h-6 object-cover rounded shadow-sm"
+                  />
                 </button>
-                <span className={scrolled ? 'text-gray-400' : 'text-white'}>|</span>
                 <button
                   onClick={() => setLanguage('tr')}
-                  className={`${scrolled ? 'text-gray-700' : 'text-white'} font-medium hover:text-[#D4AF37] transition-colors ${
-                    language === 'tr' ? 'font-bold' : ''
+                  className={`p-2 rounded-xl transition-all duration-300 transform hover:scale-110 ${
+                    language === 'tr' 
+                      ? 'bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/20 ring-2 ring-[#D4AF37] shadow-lg' 
+                      : scrolled 
+                        ? 'hover:bg-gray-100 hover:shadow-md' 
+                        : 'hover:bg-white/20 backdrop-blur-sm'
                   }`}
+                  title="Türkçe"
+                  aria-label="Switch to Turkish"
                 >
-                  Turkish
+                  <img 
+                    src="https://flagcdn.com/w20/tr.png" 
+                    alt="Turkish" 
+                    className="w-6 h-6 object-cover rounded shadow-sm"
+                  />
                 </button>
               </div>
             </div>
@@ -272,9 +335,14 @@ export default function HomePage() {
 
           {mobileMenuOpen && (
             <div className="lg:hidden pb-4 space-y-3 bg-white rounded-b-lg shadow-lg">
-              <Link href="/" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.home}</Link>
-              <Link href="/rooms" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.rooms}</Link>
-              <Link href="/restaurant" className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">{t.nav.restaurant}</Link>
+              <Link href="/rooms" className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">
+                <Bed className="w-4 h-4" />
+                {t.nav.rooms}
+              </Link>
+              <Link href="/restaurant" className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors">
+                <Utensils className="w-4 h-4" />
+                {t.nav.restaurant}
+              </Link>
               <a 
                 href="#" 
                 onClick={(e) => {
@@ -282,109 +350,141 @@ export default function HomePage() {
                   handleMenuClick(e)
                   setMobileMenuOpen(false)
                 }}
-                className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
+                <FileText className="w-4 h-4" />
                 {t.nav.menu}
               </a>
-              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">{t.nav.about}</a>
-              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className="block text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">{t.nav.contact}</a>
+              <a href="#about" onClick={(e) => handleAnchorClick(e, 'about')} className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                <Info className="w-4 h-4" />
+                {t.nav.about}
+              </a>
+              <a href="#contact" onClick={(e) => handleAnchorClick(e, 'contact')} className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                <Phone className="w-4 h-4" />
+                {t.nav.contact}
+              </a>
             </div>
           )}
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      {/* Hero Section - Cinematic Treatment */}
+      <section className="relative min-h-screen flex items-end justify-center overflow-hidden pt-20 pb-12">
         <div className="absolute inset-0 z-0">
-              <Image
-            src="/hotel_img/IMGM8827.JPG"
-            alt="Crown Salamis Hotel"
-                fill
-                className="object-cover"
-            priority
-              />
-          <div className="absolute inset-0 bg-black/40" />
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="none"
+            className="absolute inset-0 w-full h-full object-cover scale-105 transform transition-transform duration-[10000ms]"
+          >
+            <source src="/bg-video.MP4" type="video/mp4" />
+          </video>
+          {/* Premium Multi-layer Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#D4AF37]/10 via-transparent to-[#D4AF37]/10" />
         </div>
         
-        {/* Booking Widget Overlay */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-6 md:p-8">
-            <FadeInSection direction="up" className="text-center mb-6">
-              <h1 className="text-3xl md:text-5xl font-serif text-gray-900 mb-2">
-                Living your experience
-              </h1>
-              {/* <h2 className="text-2xl md:text-4xl font-serif text-[#D4AF37] mb-2">
-                Five Star Experience
-              </h2> */}
-              <p className="text-sm text-gray-600 mt-2">
-                Required fields are followed by *
-              </p>
+        {/* Booking Widget Overlay - Premium Glassmorphism */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 mb-8">
+          <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border border-white/20 p-6 md:p-8 transform hover:scale-[1.01] transition-all duration-500">
+            <FadeInSection direction="up" className="text-center mb-4">
+              <div className="flex items-center justify-center mb-2">
+              <Image
+                  src="/logo.png"
+                  alt="Crown Salamis Hotel Logo"
+                  width={100}
+                  height={100}
+                  className="object-contain drop-shadow-2xl"
+            priority
+              />
+        </div>
+              <div className="h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent rounded-full mb-3" />
             </FadeInSection>
             
-            <form onSubmit={handleReservation} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <form onSubmit={handleReservation} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#D4AF37]" />
                   {t.hero.checkIn} <span className="text-[#D4AF37]">*</span>
                 </label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37] pointer-events-none z-10 group-focus-within:scale-110 transition-transform" />
                 <input
                   type="date"
                   value={checkIn}
                   onChange={(e) => setCheckIn(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
+                    className="w-full pl-12 pr-4 py-3.5 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300"
                   required
                 />
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#D4AF37]" />
                   {t.hero.checkOut} <span className="text-[#D4AF37]">*</span>
                 </label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37] pointer-events-none z-10 group-focus-within:scale-110 transition-transform" />
                 <input
                   type="date"
                   value={checkOut}
                   onChange={(e) => setCheckOut(e.target.value)}
                   min={checkIn || new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
+                    className="w-full pl-12 pr-4 py-3.5 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300"
                   required
                 />
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#D4AF37]" />
                   {t.hero.adults}
                 </label>
+                <div className="relative group">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-[#D4AF37] group-focus-within:scale-110 transition-all" />
                 <select
                   value={adults}
                   onChange={(e) => setAdults(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
+                    className="w-full pl-12 pr-4 py-3.5 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none appearance-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300 cursor-pointer"
                 >
                   {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
+                </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <div className="md:col-span-1">
+                <label className="block text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#D4AF37]" />
                   {t.hero.children}
                 </label>
-                <select
-                  value={children}
-                  onChange={(e) => setChildren(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none"
-                >
-                  {Array.from({ length: 11 }, (_, i) => i).map(n => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
+                <div className="relative group">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-[#D4AF37] group-focus-within:scale-110 transition-all" />
+                  <select
+                    value={children}
+                    onChange={(e) => setChildren(parseInt(e.target.value))}
+                    className="w-full pl-12 pr-4 py-3.5 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none appearance-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300 cursor-pointer"
+                  >
+                    {Array.from({ length: 11 }, (_, i) => i).map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               
-              <div className="md:col-span-4">
+              <div className="md:col-span-1 flex items-end">
                 <button
                   type="submit"
-                  className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold py-4 px-8 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-500 shadow-xl hover:shadow-2xl hover:scale-[1.02] flex items-center justify-center gap-2 transform"
                 >
+                  <Search className="w-5 h-5" />
                   {t.hero.checkAvailability}
                 </button>
               </div>
@@ -394,21 +494,15 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section id="about" className="py-12 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <FadeInSection direction="up" className="text-center mb-16">
+          <FadeInSection direction="up" className="text-center mb-4">
             <div className="inline-flex items-center justify-center mb-6">
               <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
               <Star className="w-6 h-6 text-[#D4AF37]" />
               <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif text-gray-900 mb-2">
-              Crown Salamis
-            </h2>
-            <h3 className="text-4xl md:text-6xl font-serif text-[#D4AF37] mb-8">
-              Hotel
-            </h3>
           </FadeInSection>
 
           {/* Main Content - Two Column Layout */}
@@ -483,6 +577,8 @@ export default function HomePage() {
                       alt={`${t.about.experience.title} - ${index + 1}`}
                       fill
                       className="object-cover"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      priority={index === 0}
                     />
                   </div>
                 ))}
@@ -509,11 +605,6 @@ export default function HomePage() {
                       </p>
                     </div>
                     <div className="flex justify-center space-x-4 pt-4">
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-[#D4AF37]">5★</div>
-                        <div className="text-sm text-gray-300 mt-1">{t.about.experience.starService}</div>
-                      </div>
-                      <div className="w-px bg-gray-400"></div>
                       <div className="text-center">
                         <div className="text-3xl font-bold text-[#D4AF37]">24/7</div>
                         <div className="text-sm text-gray-300 mt-1">{t.about.experience.support}</div>
@@ -597,6 +688,7 @@ export default function HomePage() {
               alt={`${t.about.experience.title} - ${experienceLightboxIndex + 1}`}
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
+              loading="lazy"
             />
             
             {hotelImages.length > 1 && (
@@ -634,22 +726,35 @@ export default function HomePage() {
       {/* Rooms Section - Black Background */}
       <section className="py-20 bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
-            <FadeInSection direction="left" className="mb-6 md:mb-0">
-              <p className="text-sm text-gray-400 mb-2">{t.rooms.feelComfort}</p>
-              <h2 className="text-4xl md:text-6xl font-serif text-white mb-4">
+          <FadeInSection direction="up" className="text-center mb-8">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
+            <FadeInSection direction="left" className="mb-8 md:mb-0">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="w-12 h-0.5 bg-[#D4AF37]" />
+                <p className="text-[#D4AF37] text-sm font-bold tracking-widest uppercase">{t.rooms.feelComfort}</p>
+                <div className="w-12 h-0.5 bg-[#D4AF37]" />
+              </div>
+              <h2 className="text-5xl md:text-7xl font-serif text-white mb-6 tracking-tight leading-tight">
                 {t.rooms.title}
               </h2>
-              <p className="text-gray-400 max-w-2xl">
+              <p className="text-gray-300 max-w-2xl text-lg leading-relaxed">
                 {t.rooms.description}
               </p>
             </FadeInSection>
             <FadeInSection direction="right">
               <Link 
                 href="/rooms"
-                className="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-black transition-all duration-300"
+                className="group relative inline-flex items-center gap-2 bg-gradient-to-r from-[#D4AF37] to-[#B8941F] text-white font-bold px-8 py-4 rounded-2xl hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-500 overflow-hidden"
               >
-                {t.rooms.viewAll}
+                <span className="relative z-10">{t.rooms.viewAll}</span>
+                <ChevronRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#B8941F] to-[#D4AF37] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Link>
             </FadeInSection>
           </div>
@@ -663,32 +768,46 @@ export default function HomePage() {
               <p className="text-gray-400 text-lg">{t.rooms.noRooms}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {rooms.map((room, index) => (
                 <FadeInSection key={room.id} delay={index * 80}>
-                  <Link href={`/rooms/${room.id}/book`} className="group block">
-                    <div className="bg-gray-900 rounded-lg overflow-hidden hover:shadow-2xl transition-all duration-300">
-                      <div className="relative h-64">
+                  <Link href={`/rooms/${room.id}/book`} className="group block h-full">
+                    <div className="bg-white rounded-2xl overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] transition-all duration-500 h-full flex flex-col transform hover:-translate-y-2 border border-gray-100">
+                      <div className="relative h-72 flex-shrink-0 overflow-hidden">
                         <img
                           src={getImageUrl(room.main_image)}
                           alt={`${room.name} - ${room.room_type_name} at Crown Salamis Hotel`}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.src = '/imgtouse/1.JPG' // Fallback image
                           }}
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute top-4 right-4 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                          BOOK NOW
+                        </div>
                       </div>
-                      <div className="p-6">
-                        <h3 className="text-xl font-serif text-white mb-2">{room.name}</h3>
-                        <p className="text-gray-400 text-sm mb-4">
-                          / {room.max_adults} {t.rooms.adults} {room.max_children > 0 ? `${room.max_children} ${t.rooms.children}` : ''}
-                          {room.room_type_name && ` • ${room.room_type_name}`}
-                        </p>
-                        <p className="text-[#D4AF37] text-xl font-bold">
-                          {formatPrice(room.price_per_night)} {t.rooms.pricePerNight}
-                        </p>
+                      <div className="p-6 flex flex-col flex-grow bg-gradient-to-b from-white to-gray-50">
+                        <h3 className="text-2xl font-serif text-gray-900 mb-3 line-clamp-2 min-h-[3rem] group-hover:text-[#D4AF37] transition-colors duration-300">{room.name}</h3>
+                        <div className="flex items-center gap-2 text-gray-600 text-sm mb-4 min-h-[1.5rem]">
+                          <Users className="w-4 h-4 text-[#D4AF37]" />
+                          <span>{room.max_adults} {t.rooms.adults} {room.max_children > 0 ? `• ${room.max_children} ${t.rooms.children}` : ''}</span>
+                        </div>
+                        {room.room_type_name && (
+                          <div className="inline-flex items-center mb-4 px-3 py-1 bg-[#D4AF37]/10 rounded-full text-xs font-semibold text-[#D4AF37] w-fit">
+                            {room.room_type_name}
+                          </div>
+                        )}
+                        <div className="mt-auto pt-4 border-t border-gray-200">
+                          <div className="flex items-baseline gap-2">
+                            <p className="text-[#D4AF37] text-3xl font-bold">
+                              {formatPrice(room.price_per_night)}
+                            </p>
+                            <span className="text-gray-500 text-sm">{t.rooms.pricePerNight}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -700,8 +819,15 @@ export default function HomePage() {
       </section>
 
       {/* Amenities Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="pt-20 pb-8 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeInSection direction="up" className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
           <FadeInSection direction="up" className="text-center mb-12">
             <p className="text-sm text-gray-600 mb-2">{t.services.subtitle}</p>
             <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
@@ -709,93 +835,244 @@ export default function HomePage() {
             </h2>
           </FadeInSection>
 
-          {/* Services Grid */}
+          {/* Services Grid - Premium Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
             {/* Room Service */}
-            <FadeInSection delay={100} className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bed className="w-8 h-8 text-[#D4AF37]" />
+            <FadeInSection delay={100} className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-[0_20px_50px_rgba(212,175,55,0.2)] transition-all duration-500 text-center h-full flex flex-col border border-gray-100 hover:border-[#D4AF37]/30 transform hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <Bed className="w-10 h-10 text-[#D4AF37]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#D4AF37] transition-colors">{t.services.roomService.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{t.services.roomService.description}</p>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.roomService.title}</h3>
-              <p className="text-gray-600 text-sm">{t.services.roomService.description}</p>
             </FadeInSection>
 
             {/* Breakfast */}
-            <FadeInSection delay={200} className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-8 h-8 text-[#D4AF37]" />
+            <FadeInSection delay={200} className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-[0_20px_50px_rgba(212,175,55,0.2)] transition-all duration-500 text-center h-full flex flex-col border border-gray-100 hover:border-[#D4AF37]/30 transform hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <Star className="w-10 h-10 text-[#D4AF37]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#D4AF37] transition-colors">{t.services.breakfast.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{t.services.breakfast.description}</p>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.breakfast.title}</h3>
-              <p className="text-gray-600 text-sm">{t.services.breakfast.description}</p>
             </FadeInSection>
 
             {/* Parking */}
-            <FadeInSection delay={300} className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Home className="w-8 h-8 text-[#D4AF37]" />
+            <FadeInSection delay={300} className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-[0_20px_50px_rgba(212,175,55,0.2)] transition-all duration-500 text-center h-full flex flex-col border border-gray-100 hover:border-[#D4AF37]/30 transform hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <Home className="w-10 h-10 text-[#D4AF37]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#D4AF37] transition-colors">{t.services.parking.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{t.services.parking.description}</p>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.parking.title}</h3>
-              <p className="text-gray-600 text-sm">{t.services.parking.description}</p>
             </FadeInSection>
 
             {/* High-Speed Internet */}
-            <FadeInSection delay={400} className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-[#D4AF37]" />
+            <FadeInSection delay={400} className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-[0_20px_50px_rgba(212,175,55,0.2)] transition-all duration-500 text-center h-full flex flex-col border border-gray-100 hover:border-[#D4AF37]/30 transform hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <Phone className="w-10 h-10 text-[#D4AF37]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#D4AF37] transition-colors">{t.services.wifi.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{t.services.wifi.description}</p>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.wifi.title}</h3>
-              <p className="text-gray-600 text-sm">{t.services.wifi.description}</p>
             </FadeInSection>
 
             {/* Transfer Service */}
-            <FadeInSection delay={500} className="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-shadow text-center">
-              <div className="w-16 h-16 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ChevronRight className="w-8 h-8 text-[#D4AF37]" />
+            <FadeInSection delay={500} className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-[0_20px_50px_rgba(212,175,55,0.2)] transition-all duration-500 text-center h-full flex flex-col border border-gray-100 hover:border-[#D4AF37]/30 transform hover:-translate-y-2">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  <ChevronRight className="w-10 h-10 text-[#D4AF37]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#D4AF37] transition-colors">{t.services.transfer.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{t.services.transfer.description}</p>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t.services.transfer.title}</h3>
-              <p className="text-gray-600 text-sm">{t.services.transfer.description}</p>
             </FadeInSection>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {/* The Food */}
-            <FadeInSection direction="up" className="relative h-96 rounded-lg overflow-hidden group">
+      {/* Recommended By Section */}
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeInSection direction="up" className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
+          <FadeInSection direction="up" className="text-center mb-8">
+            <p className="text-sm text-gray-600 mb-4">Trusted by travelers worldwide</p>
+            <h2 className="text-3xl md:text-5xl font-serif text-gray-900 mb-8">
+              Recommended By
+            </h2>
+            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+              <div className="opacity-80 hover:opacity-100 transition-opacity">
               <Image
-                src="/hotel_img/IMGM8809.JPG"
-                alt="The Food"
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-gray-300 text-sm mb-2">the</p>
-                  <h3 className="text-7xl md:text-9xl font-bold text-orange-500">food</h3>
-                  <p className="text-white mt-4 text-lg">The Food By  an amazing Restaurant</p>
+                  src="https://static.tacdn.com/img2/brand_refresh/Tripadvisor_lockup_horizontal_secondary_registered.svg"
+                  alt="TripAdvisor"
+                  width={200}
+                  height={60}
+                  className="h-12 md:h-16 w-auto object-contain"
+                  loading="lazy"
+                />
+              </div>
+              <div className="opacity-80 hover:opacity-100 transition-opacity flex items-center justify-center">
+                <img
+                  src="https://logos-world.net/wp-content/uploads/2020/06/Booking-Logo.png"
+                  alt="Booking.com"
+                  className="h-12 md:h-16 w-auto object-contain max-w-[200px]"
+                  loading="lazy"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const parent = target.parentElement
+                    if (parent && !parent.querySelector('.fallback-text')) {
+                      const fallback = document.createElement('span')
+                      fallback.className = 'fallback-text text-xl md:text-2xl font-bold text-[#003580]'
+                      fallback.textContent = 'Booking.com'
+                      parent.appendChild(fallback)
+                    }
+                  }}
+                />
+                </div>
+              </div>
+            </FadeInSection>
+        </div>
+      </section>
+
+      {/* Property Amenities & Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeInSection direction="up" className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
+          <FadeInSection direction="up" className="text-center mb-12">
+            <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
+              {t.amenities.title}
+            </h2>
+          </FadeInSection>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Property Amenities */}
+            <FadeInSection direction="left" className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-2xl font-serif text-gray-900 mb-6 flex items-center gap-2">
+                <Star className="w-6 h-6 text-[#D4AF37]" />
+                {t.amenities.propertyAmenities}
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Car className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.freeParking}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Wifi className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.freeWifi}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Coffee className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.freeBreakfast}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Bike className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.bicycleRental}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Ship className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.boating}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Baby className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.highchairs}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Plane className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.airportTransport}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Luggage className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.baggageStorage}</span>
                 </div>
               </div>
             </FadeInSection>
 
-            {/* Rest well / Sleep well */}
-            <FadeInSection direction="up" delay={150} className="relative h-96 rounded-lg overflow-hidden group">
-                <Image
-                src="/hotel_img/IMGM8778.JPG"
-                alt="Rest well Sleep well"
-                  fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              <div className="absolute inset-0 bg-black/30" />
-              <div className="absolute inset-0 flex items-center justify-center p-8">
-                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-8 max-w-md">
-                  <h3 className="text-4xl font-serif text-gray-900 mb-2">Rest well</h3>
-                  <h3 className="text-5xl font-serif text-gray-900 mb-4">Sleep well</h3>
-                  <p className="text-gray-600 mb-6">Make room for some adventure.</p>
-                  <Link 
-                    href="/rooms"
-                    className="inline-block border-2 border-gray-900 text-gray-900 font-semibold px-6 py-2 rounded-lg hover:bg-gray-900 hover:text-white transition-all duration-300"
-                  >
-                    Learn More
-                  </Link>
+            {/* Room Features */}
+            <FadeInSection direction="up" className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-2xl font-serif text-gray-900 mb-6 flex items-center gap-2">
+                <Bed className="w-6 h-6 text-[#D4AF37]" />
+                {t.amenities.roomFeatures}
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Moon className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.blackoutCurtains}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Shirt className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.bathrobes}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Wind className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.airConditioning}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Layout className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.desk}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.roomService}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <GlassWater className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.minibar}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Tv className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.cableTv}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Droplet className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.walkInShower}</span>
+                </div>
+              </div>
+            </FadeInSection>
+
+            {/* Room Types */}
+            <FadeInSection direction="right" className="bg-gray-50 rounded-xl p-6">
+              <h3 className="text-2xl font-serif text-gray-900 mb-6 flex items-center gap-2">
+                <Home className="w-6 h-6 text-[#D4AF37]" />
+                {t.amenities.roomTypes}
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Waves className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.oceanView}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.cityView}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Ban className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.nonSmoking}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.familyRooms}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Cigarette className="w-5 h-5 text-[#D4AF37]" />
+                  <span className="text-gray-700">{t.amenities.smokingRooms}</span>
                 </div>
               </div>
             </FadeInSection>
@@ -804,8 +1081,15 @@ export default function HomePage() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
+      <section id="contact" className="pt-8 pb-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeInSection direction="up" className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
           <FadeInSection direction="up" className="text-center mb-12">
             <p className="text-sm text-gray-600 mb-2">Make your stay memorable</p>
             <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
@@ -899,55 +1183,115 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-black text-white py-16">
+      {/* Map Section */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+          <FadeInSection direction="up" className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+          </FadeInSection>
+          <FadeInSection direction="up" className="text-center mb-8">
+            <h2 className="text-4xl md:text-6xl font-serif text-gray-900 mb-4">
+              {language === 'tr' ? 'Konumumuz' : 'Our Location'}
+            </h2>
+            <p className="text-gray-600 mb-8">
+              {language === 'tr' 
+                ? 'Bizi ziyaret edin veya haritada konumumuzu görün'
+                : 'Visit us or find our location on the map'}
+            </p>
+          </FadeInSection>
+          <FadeInSection direction="up">
+            <div className="rounded-lg overflow-hidden shadow-2xl">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3262.49658379195!2d33.9128129!3d35.1442343!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14dfc9d8797fa619%3A0x9d7ba499cb3a2620!2sCrown%20Salamis%20Hotel!5e0!3m2!1sen!2s!4v1762468222319!5m2!1sen!2s"
+                width="100%"
+                height="450"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full"
+              />
+            </div>
+          </FadeInSection>
+        </div>
+      </section>
+
+      {/* Footer - Premium Design */}
+      <footer className="relative bg-gradient-to-b from-gray-900 via-black to-black text-white py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/imgtouse/1.JPG')] opacity-5 bg-cover bg-center" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/95 to-black/80" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-16">
             {/* Hotel Info */}
-            <div>
-              <h3 className="text-2xl font-serif text-white mb-4">{t.footer.hotelName}</h3>
-              <p className="text-gray-300 mb-4">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-3xl font-serif text-[#D4AF37] mb-2 tracking-wider">{t.footer.hotelName}</h3>
+                <div className="w-16 h-1 bg-gradient-to-r from-[#D4AF37] to-transparent rounded-full mb-4" />
+              </div>
+              <p className="text-gray-300 leading-relaxed">
                 {t.footer.description}
               </p>
-              <div className="space-y-2 text-gray-400">
-                <p className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  <a href="tel:+905428613030" className="hover:text-white transition-colors">+90 542 861 3030</a>
-                </p>
-                <p className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  <a href="mailto:reservation@crownsalamishotel.com" className="hover:text-white transition-colors">reservation@crownsalamishotel.com</a>
-                </p>
-                <p className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
+              <div className="space-y-4 text-gray-400">
+                <a href="tel:+905428613030" className="flex items-center gap-3 group hover:text-[#D4AF37] transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all">
+                    <Phone className="w-5 h-5 text-[#D4AF37]" />
+                  </div>
+                  <span>+90 542 861 3030</span>
+                </a>
+                <a href="mailto:reservation@crownsalamishotel.com" className="flex items-center gap-3 group hover:text-[#D4AF37] transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center group-hover:bg-[#D4AF37]/20 transition-all">
+                    <Mail className="w-5 h-5 text-[#D4AF37]" />
+                  </div>
+                  <span className="break-all">reservation@crownsalamishotel.com</span>
+                </a>
+                <div className="flex items-start gap-3 group">
+                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <MapPin className="w-5 h-5 text-[#D4AF37]" />
+                  </div>
                   <span>İsmet İnönü Bulvarı, No: 290<br />Gazimağusa / Kuzey Kıbrıs</span>
-                </p>
+                </div>
               </div>
             </div>
             
             {/* Our Rooms */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.ourRooms}</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/rooms/standard" className="hover:text-[#D4AF37] transition-colors">Standard Room</Link></li>
-                <li><Link href="/rooms/family" className="hover:text-[#D4AF37] transition-colors">Family Room</Link></li>
-                <li><Link href="/rooms/premium" className="hover:text-[#D4AF37] transition-colors">Premium Suite</Link></li>
-                <li><Link href="/rooms/superior" className="hover:text-[#D4AF37] transition-colors">Superior Room</Link></li>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">{t.footer.ourRooms}</h3>
+                <div className="w-12 h-1 bg-gradient-to-r from-[#D4AF37] to-transparent rounded-full mb-6" />
+              </div>
+              <ul className="space-y-3">
+                <li><Link href="/rooms/standard" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />Standard Room</Link></li>
+                <li><Link href="/rooms/family" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />Family Room</Link></li>
+                <li><Link href="/rooms/premium" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />Premium Suite</Link></li>
+                <li><Link href="/rooms/superior" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />Superior Room</Link></li>
               </ul>
             </div>
             
             {/* Other Links */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">{t.footer.otherLinks}</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#about" className="hover:text-[#D4AF37] transition-colors">{t.nav.about}</Link></li>
-                <li><Link href="#contact" className="hover:text-[#D4AF37] transition-colors">{t.footer.opportunities}</Link></li>
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">{t.footer.otherLinks}</h3>
+                <div className="w-12 h-1 bg-gradient-to-r from-[#D4AF37] to-transparent rounded-full mb-6" />
+              </div>
+              <ul className="space-y-3">
+                <li><Link href="#about" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />{t.nav.about}</Link></li>
+                <li><Link href="#contact" className="text-gray-400 hover:text-[#D4AF37] transition-colors duration-300 flex items-center gap-2 group"><ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />{t.footer.opportunities}</Link></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-            <p>{t.footer.designedBy}</p>
+          <div className="border-t border-gray-800/50 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-gray-500 text-sm">{t.footer.designedBy}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+                <span className="text-gray-500 text-sm">© {new Date().getFullYear()} Crown Salamis Hotel. All rights reserved.</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

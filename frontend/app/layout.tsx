@@ -26,9 +26,9 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Crown Salamis Hotel - Five Star Luxury Experience in Cyprus",
-  description: "Experience five-star luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities on the Nicosia-Famagusta Road. Book your perfect stay today.",
-  keywords: 'crown salamis hotel, luxury hotel cyprus, five star hotel, nicosia hotel, famagusta hotel, balikesir hotel, cyprus accommodation, premium rooms, hotel booking',
+  title: "Crown Salamis Hotel - Luxury Experience in Cyprus",
+  description: "Experience luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities on the Nicosia-Famagusta Road. Book your perfect stay today.",
+  keywords: 'crown salamis hotel, luxury hotel cyprus, nicosia hotel, famagusta hotel, balikesir hotel, cyprus accommodation, premium rooms, hotel booking',
   authors: [{ name: "Crown Salamis Hotel" }],
   metadataBase: new URL('https://crownsalamishotel.com'),
   icons: {
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
     apple: '/logo.jpeg',
   },
   openGraph: {
-    title: "Crown Salamis Hotel - Five Star Luxury Experience in Cyprus",
-    description: "Experience five-star luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities. Book your perfect stay today.",
+    title: "Crown Salamis Hotel - Luxury Experience in Cyprus",
+    description: "Experience luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities. Book your perfect stay today.",
     url: 'https://crownsalamishotel.com',
     siteName: "Crown Salamis Hotel",
     locale: 'en_US',
@@ -54,8 +54,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Crown Salamis Hotel - Five Star Luxury Experience in Cyprus",
-    description: "Experience five-star luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities. Book your perfect stay today.",
+    title: "Crown Salamis Hotel - Luxury Experience in Cyprus",
+    description: "Experience luxury at Crown Salamis Hotel in Cyprus. Premium rooms, exceptional service, and world-class amenities. Book your perfect stay today.",
     images: ['/imgtouse/IMGM8943.JPG'],
   },
   robots: {

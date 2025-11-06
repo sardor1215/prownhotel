@@ -8,6 +8,7 @@ import { Calendar, Users, Mail, Phone, User, MessageSquare, ArrowLeft, Check, Sh
 import toast from 'react-hot-toast'
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
+import { formatDate } from '@/lib/utils'
 import FadeInSection from '@/components/FadeInSection'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/i18n'
@@ -34,8 +35,8 @@ function BookingContent() {
   const router = useRouter()
   
   const roomId = params.id as string
-  const checkIn = searchParams.get('check_in') || ''
-  const checkOut = searchParams.get('check_out') || ''
+  const initialCheckIn = searchParams.get('check_in') || ''
+  const initialCheckOut = searchParams.get('check_out') || ''
   const adults = parseInt(searchParams.get('adults') || '1')
   const children = parseInt(searchParams.get('children') || '0')
 
@@ -46,6 +47,8 @@ function BookingContent() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxImages, setLightboxImages] = useState<string[]>([])
   const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [checkIn, setCheckIn] = useState(initialCheckIn)
+  const [checkOut, setCheckOut] = useState(initialCheckOut)
 
   const [formData, setFormData] = useState({
     guest_name: '',
@@ -59,6 +62,36 @@ function BookingContent() {
       fetchRoom()
     }
   }, [roomId])
+
+  // Auto-update check-out when check-in changes to maintain nights or set to 1 night minimum
+  useEffect(() => {
+    if (checkIn) {
+      const currentNights = calculateNights()
+      // If check-out is invalid or before check-in, set to 1 night
+      if (!checkOut || currentNights <= 0) {
+        const newCheckOut = calculateCheckOut(checkIn, 1)
+        setCheckOut(newCheckOut)
+        // Update URL
+        const params = new URLSearchParams(window.location.search)
+        params.set('check_out', newCheckOut)
+        params.set('check_in', checkIn)
+        router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+      } else {
+        // Maintain the same number of nights when check-in changes
+        const newCheckOut = calculateCheckOut(checkIn, currentNights)
+        if (newCheckOut !== checkOut) {
+          setCheckOut(newCheckOut)
+          // Update URL
+          const params = new URLSearchParams(window.location.search)
+          params.set('check_out', newCheckOut)
+          params.set('check_in', checkIn)
+          router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkIn])
+
 
   const fetchRoom = async () => {
     try {
@@ -90,8 +123,28 @@ function BookingContent() {
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
   }
 
+  const calculateCheckOut = (checkInDate: string, numNights: number) => {
+    if (!checkInDate || numNights <= 0) return ''
+    const start = new Date(checkInDate)
+    const end = new Date(start)
+    end.setDate(end.getDate() + numNights)
+    return end.toISOString().split('T')[0]
+  }
+
   const nights = calculateNights()
   const totalAmount = room ? parseFloat(String(room.price_per_night)) * nights : 0
+
+  const handleNightsChange = (newNights: number) => {
+    if (newNights > 0 && checkIn) {
+      const newCheckOut = calculateCheckOut(checkIn, newNights)
+      setCheckOut(newCheckOut)
+      // Update URL params
+      const params = new URLSearchParams(window.location.search)
+      params.set('check_out', newCheckOut)
+      params.set('check_in', checkIn)
+      router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -224,13 +277,15 @@ function BookingContent() {
       <nav className="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-2xl md:text-3xl font-serif text-[#D4AF37] font-bold">
-                CROWN
-              </span>
-              <span className="text-2xl md:text-3xl font-serif text-gray-900 font-bold">
-                Salamis Hotel
-              </span>
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/iconfornav.png"
+                alt="Crown Salamis Hotel Logo"
+                width={180}
+                height={60}
+                className="object-contain h-12 md:h-16 group-hover:scale-105 transition-transform duration-300"
+                priority
+              />
             </Link>
             
             <div className="hidden md:flex items-center space-x-4">
@@ -453,20 +508,72 @@ function BookingContent() {
                   <p className="text-sm text-gray-500 uppercase tracking-wide">{room.room_type_name}</p>
                 </div>
 
-                <div className="border-t border-gray-100 pt-4 space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 flex items-center gap-2">
+                <div className="border-t border-gray-100 pt-4 space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-semibold flex items-center gap-2 text-sm">
                       <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                      {t.booking.checkIn}
-                    </span>
-                    <span className="font-semibold text-gray-900">{checkIn ? new Date(checkIn).toLocaleDateString() : t.booking.invalidDate}</span>
+                      {t.booking.checkIn} <span className="text-[#D4AF37]">*</span>
+                    </label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37] pointer-events-none z-10 group-focus-within:scale-110 transition-transform" />
+                      <input
+                        type="date"
+                        value={checkIn}
+                        onChange={(e) => {
+                          const newCheckIn = e.target.value
+                          setCheckIn(newCheckIn)
+                          // Update URL
+                          const params = new URLSearchParams(window.location.search)
+                          params.set('check_in', newCheckIn)
+                          if (newCheckIn && checkOut) {
+                            const newNights = calculateNights()
+                            if (newNights <= 0) {
+                              // If check-out is before or equal to check-in, set to next day
+                              const newCheckOut = calculateCheckOut(newCheckIn, 1)
+                              setCheckOut(newCheckOut)
+                              params.set('check_out', newCheckOut)
+                            } else {
+                              // Maintain nights
+                              const newCheckOut = calculateCheckOut(newCheckIn, newNights)
+                              setCheckOut(newCheckOut)
+                              params.set('check_out', newCheckOut)
+                            }
+                          }
+                          router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+                        }}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full pl-12 pr-4 py-3 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 flex items-center gap-2">
+                  <div className="space-y-2">
+                    <label className="text-gray-700 font-semibold flex items-center gap-2 text-sm">
                       <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                      {t.booking.checkOut}
-                    </span>
-                    <span className="font-semibold text-gray-900">{checkOut ? new Date(checkOut).toLocaleDateString() : t.booking.invalidDate}</span>
+                      {t.booking.checkOut} <span className="text-[#D4AF37]">*</span>
+                    </label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#D4AF37] pointer-events-none z-10 group-focus-within:scale-110 transition-transform" />
+                      <input
+                        type="date"
+                        value={checkOut}
+                        onChange={(e) => {
+                          const newCheckOut = e.target.value
+                          setCheckOut(newCheckOut)
+                          // Update URL
+                          const params = new URLSearchParams(window.location.search)
+                          params.set('check_out', newCheckOut)
+                          if (checkIn) {
+                            params.set('check_in', checkIn)
+                          }
+                          router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false })
+                        }}
+                        min={checkIn || new Date().toISOString().split('T')[0]}
+                        className="w-full pl-12 pr-4 py-3 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none bg-white shadow-sm hover:shadow-md hover:border-[#D4AF37]/50 transition-all duration-300"
+                        required
+                        disabled={!checkIn}
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 flex items-center gap-2">
@@ -475,12 +582,58 @@ function BookingContent() {
                     </span>
                     <span className="font-semibold text-gray-900">{adults} {t.booking.adults}, {children} {t.booking.children}</span>
                   </div>
+                  <div className="flex items-center justify-between text-sm pt-4 border-t-2 border-gray-200 bg-gradient-to-r from-[#D4AF37]/5 to-transparent p-3 rounded-lg">
+                    <span className="text-gray-700 font-semibold flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-[#D4AF37]" />
+                      {language === 'tr' ? 'Gece Sayısı' : 'Number of Nights'}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleNightsChange(Math.max(1, nights - 1))}
+                        disabled={nights <= 1 || !checkIn}
+                        className="w-10 h-10 rounded-xl bg-white border-2 border-gray-200 hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 disabled:hover:text-gray-600 transition-all duration-300 flex items-center justify-center font-bold text-lg shadow-sm hover:shadow-md"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={nights || 1}
+                        onChange={(e) => {
+                          const newNights = parseInt(e.target.value) || 1
+                          if (newNights >= 1 && newNights <= 365) {
+                            handleNightsChange(newNights)
+                          }
+                        }}
+                        disabled={!checkIn}
+                        className="w-20 text-center font-bold text-lg text-gray-900 border-2 border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-[#D4AF37]/50 focus:border-[#D4AF37] outline-none bg-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleNightsChange(nights + 1)}
+                        disabled={!checkIn || nights >= 365}
+                        className="w-10 h-10 rounded-xl bg-white border-2 border-gray-200 hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-white text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:border-gray-200 disabled:hover:text-gray-600 transition-all duration-300 flex items-center justify-center font-bold text-lg shadow-sm hover:shadow-md"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  {!checkIn && (
+                    <p className="text-xs text-gray-500 italic mt-2 text-center">
+                      {language === 'tr' ? 'Gece sayısını ayarlamak için önce giriş tarihini seçin' : 'Select check-in date first to adjust nights'}
+                    </p>
+                  )}
                 </div>
 
-                <div className="border-t border-gray-100 pt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">{formatPrice(room.price_per_night)} × {nights} {t.booking.nights}</span>
-                    <span className="font-semibold">{formatPrice(parseFloat(String(room.price_per_night)) * nights)}</span>
+                <div className="border-t-2 border-gray-200 pt-4 space-y-3 bg-gradient-to-r from-gray-50 to-transparent p-4 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-gray-600 text-sm">{formatPrice(room.price_per_night)} {language === 'tr' ? 'gece' : 'per night'}</span>
+                      <span className="text-gray-500 text-xs mt-1">× {nights} {nights === 1 ? (language === 'tr' ? 'gece' : 'night') : (language === 'tr' ? 'gece' : 'nights')}</span>
+                    </div>
+                    <span className="font-bold text-lg text-gray-900">{formatPrice(parseFloat(String(room.price_per_night)) * nights)}</span>
                   </div>
                 </div>
 

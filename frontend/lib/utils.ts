@@ -18,15 +18,29 @@ export function formatNumber(num: number = 0): string {
 }
 
 /**
- * Format a date string
+ * Format a date string to dd/mm/yyyy
  */
-export function formatDate(dateString: string, formatStr = 'MMM d, yyyy'): string {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(date);
+export function formatDate(dateString: string): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year}`
+}
+
+/**
+ * Format a date string to dd/mm/yyyy with time
+ */
+export function formatDateTime(dateString: string): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${day}/${month}/${year} ${hours}:${minutes}`
 }
 
 /**

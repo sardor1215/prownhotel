@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Package, Calendar, DollarSign, Eye, X, AlertCircle, Loader2 } from 'lucide-react'
+import { formatDateTime } from '@/lib/utils'
 
 interface Order {
   id: number
@@ -132,15 +133,6 @@ export default function MyOrdersPage() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   if (isLoading) {
     return (
@@ -202,7 +194,7 @@ export default function MyOrdersPage() {
                         <h3 className="font-semibold text-lg">Order #{order.id}</h3>
                         <p className="text-gray-600 text-sm flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatDate(order.created_at)}
+                          {formatDateTime(order.created_at)}
                         </p>
                       </div>
                     </div>

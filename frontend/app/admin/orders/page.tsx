@@ -6,6 +6,7 @@ import { Eye, Search, Filter, ArrowUpDown, CheckCircle, XCircle, Clock, Loader2,
 import { formatPrice } from '@/lib/format';
 import { get } from '@/lib/api-utils';
 import { API_URL } from '@/lib/api-config';
+import { formatDateTime } from '@/lib/utils';
 
 interface Order {
   id: number;
@@ -195,16 +196,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
 
   const sortedOrders = [...orders].sort((a, b) => {
     if (!sortConfig) return 0;
@@ -375,7 +366,7 @@ export default function AdminOrdersPage() {
                         {getStatusBadge(order.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(order.created_at)}
+                        {formatDateTime(order.created_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button

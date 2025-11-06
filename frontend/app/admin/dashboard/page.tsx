@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Hotel, Calendar, Users, DollarSign, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle, ArrowRight, Plus } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
 
 interface DashboardStats {
   totalRooms: number
@@ -306,14 +307,14 @@ export default function AdminDashboardPage() {
                         <div>
                           <h3 className="font-semibold text-zinc-900">{reservation.guest_name}</h3>
                           <p className="text-sm text-zinc-600 mt-1">
-                            {new Date(reservation.check_in_date).toLocaleDateString()} - {new Date(reservation.check_out_date).toLocaleDateString()}
+                            {formatDate(reservation.check_in_date)} - {formatDate(reservation.check_out_date)}
                           </p>
                         </div>
                         {getStatusBadge(reservation.status)}
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-zinc-600">
-                          Booked {new Date(reservation.created_at).toLocaleDateString()}
+                          Booked {formatDate(reservation.created_at)}
                         </span>
                         <span className="font-semibold text-zinc-900">
                           £{parseFloat(reservation.total_amount.toString()).toFixed(2)}

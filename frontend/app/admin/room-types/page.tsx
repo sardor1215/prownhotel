@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Plus, Edit, Trash2, Users, Bed, Save, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getApiUrl } from '@/lib/backend-url'
+import { formatDate } from '@/lib/utils'
 
 interface RoomType {
   id: number
@@ -488,7 +489,7 @@ export default function AdminRoomTypesPage() {
                 {/* Created Date */}
                 <div className="mt-4 pt-4 border-t border-stone-200">
                   <p className="text-xs text-zinc-500">
-                    Created {new Date(roomType.created_at).toLocaleDateString()}
+                    Created {formatDate(roomType.created_at)}
                   </p>
                 </div>
               </div>

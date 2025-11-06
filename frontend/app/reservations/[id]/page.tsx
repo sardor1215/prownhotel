@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CheckCircle, Calendar, Users, Mail, Phone, Home } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { getApiUrl } from '@/lib/backend-url'
+import { formatDate } from '@/lib/utils'
 
 interface Reservation {
   id: number
@@ -118,12 +119,7 @@ export default function ReservationConfirmationPage() {
                 <Calendar className="w-5 h-5 text-blue-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-600">Check-in</p>
-                  <p className="font-semibold">{new Date(reservation.check_in_date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</p>
+                  <p className="font-semibold">{formatDate(reservation.check_in_date)}</p>
                 </div>
               </div>
 
@@ -131,12 +127,7 @@ export default function ReservationConfirmationPage() {
                 <Calendar className="w-5 h-5 text-blue-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-600">Check-out</p>
-                  <p className="font-semibold">{new Date(reservation.check_out_date).toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</p>
+                  <p className="font-semibold">{formatDate(reservation.check_out_date)}</p>
                 </div>
               </div>
             </div>
