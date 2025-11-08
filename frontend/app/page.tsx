@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, ChevronLeft, Send, Bed, Home, ZoomIn, Utensils, FileText, Info, Search, Car, Wifi, Coffee, Bike, Ship, Baby, Plane, Luggage, Moon, Shirt, Wind, Layout, Bell, GlassWater, Tv, Droplet, Waves, Building2, Ban, Cigarette, Globe } from 'lucide-react'
+import { Calendar, Users, Phone, Mail, MapPin, Menu, X, Star, ChevronRight, ChevronLeft, Send, Bed, Home, ZoomIn, Utensils, FileText, Info, Search, Car, Wifi, Coffee, Bike, Ship, Baby, Plane, Luggage, Moon, Shirt, Wind, Layout, Bell, GlassWater, Tv, Droplet, Waves, Building2, Ban, Cigarette, Globe, Dumbbell, Sparkles } from 'lucide-react'
 import { formatPrice } from '@/lib/formatPrice'
 import { getImageUrl, getApiUrl, getBackendUrl } from '@/lib/backend-url'
 import toast from 'react-hot-toast'
@@ -53,6 +53,13 @@ export default function HomePage() {
   const [experienceLightboxIndex, setExperienceLightboxIndex] = useState(0)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const videoRef = React.useRef<HTMLVideoElement>(null)
+  const [gymCarouselIndex, setGymCarouselIndex] = useState(0)
+  const [spaCarouselIndex, setSpaCarouselIndex] = useState(0)
+  const [expandedFacility, setExpandedFacility] = useState<'gym' | 'spa' | null>(null)
+  const [gymLightboxOpen, setGymLightboxOpen] = useState(false)
+  const [gymLightboxIndex, setGymLightboxIndex] = useState(0)
+  const [spaLightboxOpen, setSpaLightboxOpen] = useState(false)
+  const [spaLightboxIndex, setSpaLightboxIndex] = useState(0)
 
   // Hotel images for experience carousel
   const hotelImages = [
@@ -62,6 +69,20 @@ export default function HomePage() {
     '/hotel_img/IMGM8778.JPG',
     '/hotel_img/IMGM8809.JPG',
     '/hotel_img/IMGM8827.JPG',
+  ]
+
+  // Facilities images
+  const gymImages = [
+    '/facilities/gym-1.jpg',
+    '/facilities/gym-2.jpg',
+    '/facilities/gym-3.jpg',
+    '/facilities/gym-4.jpg',
+  ]
+
+  const spaImages = [
+    '/facilities/spa-1.jpg',
+    '/facilities/spa-2.jpg',
+    '/facilities/spa-3.jpg',
   ]
 
   const nextExperienceImage = () => {
@@ -81,6 +102,24 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [hotelImages.length])
 
+  // Auto-play carousel for gym images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGymCarouselIndex((prev) => (prev + 1) % gymImages.length)
+    }, 4000) // Change image every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [gymImages.length])
+
+  // Auto-play carousel for spa images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSpaCarouselIndex((prev) => (prev + 1) % spaImages.length)
+    }, 4000) // Change image every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [spaImages.length])
+
   // Lightbox functions for experience carousel
   const openExperienceLightbox = (index: number) => {
     setExperienceLightboxIndex(index)
@@ -98,6 +137,76 @@ export default function HomePage() {
   const prevExperienceLightboxImage = () => {
     setExperienceLightboxIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length)
   }
+
+  // Lightbox functions for gym images
+  const openGymLightbox = React.useCallback((index: number) => {
+    setGymLightboxIndex(index)
+    setGymLightboxOpen(true)
+  }, [])
+
+  const closeGymLightbox = React.useCallback(() => {
+    setGymLightboxOpen(false)
+  }, [])
+
+  const nextGymLightboxImage = React.useCallback(() => {
+    setGymLightboxIndex((prev) => (prev + 1) % gymImages.length)
+  }, [gymImages.length])
+
+  const prevGymLightboxImage = React.useCallback(() => {
+    setGymLightboxIndex((prev) => (prev - 1 + gymImages.length) % gymImages.length)
+  }, [gymImages.length])
+
+  // Lightbox functions for spa images
+  const openSpaLightbox = React.useCallback((index: number) => {
+    setSpaLightboxIndex(index)
+    setSpaLightboxOpen(true)
+  }, [])
+
+  const closeSpaLightbox = React.useCallback(() => {
+    setSpaLightboxOpen(false)
+  }, [])
+
+  const nextSpaLightboxImage = React.useCallback(() => {
+    setSpaLightboxIndex((prev) => (prev + 1) % spaImages.length)
+  }, [spaImages.length])
+
+  const prevSpaLightboxImage = React.useCallback(() => {
+    setSpaLightboxIndex((prev) => (prev - 1 + spaImages.length) % spaImages.length)
+  }, [spaImages.length])
+
+  // Keyboard navigation for lightboxes
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (gymLightboxOpen) {
+        if (e.key === 'Escape') {
+          closeGymLightbox()
+        } else if (e.key === 'ArrowLeft') {
+          prevGymLightboxImage()
+        } else if (e.key === 'ArrowRight') {
+          nextGymLightboxImage()
+        }
+      }
+      if (spaLightboxOpen) {
+        if (e.key === 'Escape') {
+          closeSpaLightbox()
+        } else if (e.key === 'ArrowLeft') {
+          prevSpaLightboxImage()
+        } else if (e.key === 'ArrowRight') {
+          nextSpaLightboxImage()
+        }
+      }
+    }
+
+    if (gymLightboxOpen || spaLightboxOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'unset'
+    }
+  }, [gymLightboxOpen, spaLightboxOpen, closeGymLightbox, closeSpaLightbox, prevGymLightboxImage, nextGymLightboxImage, prevSpaLightboxImage, nextSpaLightboxImage])
 
   // Smooth scroll for anchor links
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
@@ -270,6 +379,14 @@ export default function HomePage() {
                 <span className="group-hover:tracking-wider transition-all">{t.nav.restaurant}</span>
               </Link>
               <a 
+                href="#facilities" 
+                onClick={(e) => handleAnchorClick(e, 'facilities')}
+                className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}
+              >
+                <Dumbbell className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="group-hover:tracking-wider transition-all">{t.nav.facilities}</span>
+              </a>
+              <a 
                 href="#" 
                 onClick={handleMenuClick}
                 className={`${scrolled ? 'text-gray-700' : 'text-white drop-shadow-md'} hover:text-[#D4AF37] font-medium transition-all duration-300 cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/10 backdrop-blur-sm group`}
@@ -299,7 +416,7 @@ export default function HomePage() {
                   aria-label="Switch to English"
                 >
                   <img 
-                    src="https://flagcdn.com/w20/gb.png" 
+                    src="/lang/united-kingdom.png" 
                     alt="English" 
                     className="w-6 h-6 object-cover rounded shadow-sm"
                   />
@@ -317,7 +434,7 @@ export default function HomePage() {
                   aria-label="Switch to Turkish"
                 >
                   <img 
-                    src="https://flagcdn.com/w20/tr.png" 
+                    src="/lang/turkey.png" 
                     alt="Turkish" 
                     className="w-6 h-6 object-cover rounded shadow-sm"
                   />
@@ -343,6 +460,17 @@ export default function HomePage() {
                 <Utensils className="w-4 h-4" />
                 {t.nav.restaurant}
               </Link>
+              <a 
+                href="#facilities" 
+                onClick={(e) => {
+                  handleAnchorClick(e, 'facilities')
+                  setMobileMenuOpen(false)
+                }}
+                className="flex items-center gap-2 text-gray-700 hover:text-[#D4AF37] py-2 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <Dumbbell className="w-4 h-4" />
+                {t.nav.facilities}
+              </a>
               <a 
                 href="#" 
                 onClick={(e) => {
@@ -716,6 +844,315 @@ export default function HomePage() {
                 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
                   {experienceLightboxIndex + 1} / {hotelImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Facilities Section */}
+      <section id="facilities" className="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <FadeInSection direction="up" className="text-center mb-12">
+            <div className="inline-flex items-center justify-center mb-6">
+              <div className="w-16 h-1 bg-[#D4AF37] mr-4"></div>
+              <Star className="w-6 h-6 text-[#D4AF37]" />
+              <div className="w-16 h-1 bg-[#D4AF37] ml-4"></div>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mb-4">
+              {t.facilities.title}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t.facilities.subtitle}
+            </p>
+          </FadeInSection>
+
+          {/* Facilities Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Gym Card */}
+            <FadeInSection direction="left" className="group">
+              <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 h-full flex flex-col">
+                <div 
+                  className="relative h-80 overflow-hidden cursor-pointer"
+                  onClick={() => openGymLightbox(gymCarouselIndex)}
+                >
+                  {gymImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${
+                        index === gymCarouselIndex ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Gym ${index + 1}`}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                        loading={index === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                  ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 group-hover:via-black/10 transition-all duration-300" />
+                  <div className="absolute top-4 left-4 bg-[#D4AF37] text-white px-4 py-2 rounded-full flex items-center gap-2 z-10">
+                    <Dumbbell className="w-5 h-5" />
+                    <span className="font-semibold">{t.facilities.gym.title}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setGymCarouselIndex((prev) => (prev - 1 + gymImages.length) % gymImages.length)
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setGymCarouselIndex((prev) => (prev + 1) % gymImages.length)
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  <div className="absolute bottom-4 right-4 text-white text-sm bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full z-10">
+                    {gymCarouselIndex + 1} / {gymImages.length}
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
+                      <ZoomIn className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-8 flex-1 flex flex-col">
+                  <h3 className="text-2xl font-serif text-gray-900 mb-4">{t.facilities.gym.title}</h3>
+                  <p className="text-gray-600 leading-relaxed mb-6 flex-1">
+                    {t.facilities.gym.description}
+                  </p>
+                  <button
+                    onClick={() => setExpandedFacility(expandedFacility === 'gym' ? null : 'gym')}
+                    className="flex items-center gap-2 text-[#D4AF37] font-semibold hover:text-[#B8941F] transition-colors cursor-pointer group"
+                  >
+                    <span>{expandedFacility === 'gym' ? t.facilities.closeDetails : t.facilities.exploreMore}</span>
+                    <ChevronRight className={`w-5 h-5 transition-transform ${expandedFacility === 'gym' ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
+                  </button>
+                </div>
+                {expandedFacility === 'gym' && (
+                  <div className="px-8 pb-8 border-t border-gray-200 pt-6 animate-[fadeIn_0.4s_ease-out]">
+                    <p className="text-gray-700 mb-6 leading-relaxed">
+                      {t.facilities.gym.details}
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {t.facilities.gym.features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-gray-700">
+                          <div className="w-2 h-2 bg-[#D4AF37] rounded-full flex-shrink-0"></div>
+                          <span className="text-sm">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </FadeInSection>
+
+            {/* Spa Card */}
+            <FadeInSection direction="right" className="group">
+              <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 h-full flex flex-col">
+                <div 
+                  className="relative h-80 overflow-hidden cursor-pointer"
+                  onClick={() => openSpaLightbox(spaCarouselIndex)}
+                >
+                  {spaImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${
+                        index === spaCarouselIndex ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Spa ${index + 1}`}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                        loading={index === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                  ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 group-hover:via-black/10 transition-all duration-300" />
+                  <div className="absolute top-4 left-4 bg-[#D4AF37] text-white px-4 py-2 rounded-full flex items-center gap-2 z-10">
+                    <Sparkles className="w-5 h-5" />
+                    <span className="font-semibold">{t.facilities.spa.title}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSpaCarouselIndex((prev) => (prev - 1 + spaImages.length) % spaImages.length)
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSpaCarouselIndex((prev) => (prev + 1) % spaImages.length)
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                  <div className="absolute bottom-4 right-4 text-white text-sm bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full z-10">
+                    {spaCarouselIndex + 1} / {spaImages.length}
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
+                      <ZoomIn className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-8 flex-1 flex flex-col">
+                  <h3 className="text-2xl font-serif text-gray-900 mb-4">{t.facilities.spa.title}</h3>
+                  <p className="text-gray-600 leading-relaxed mb-6 flex-1">
+                    {t.facilities.spa.description}
+                  </p>
+                  <button
+                    onClick={() => setExpandedFacility(expandedFacility === 'spa' ? null : 'spa')}
+                    className="flex items-center gap-2 text-[#D4AF37] font-semibold hover:text-[#B8941F] transition-colors cursor-pointer group"
+                  >
+                    <span>{expandedFacility === 'spa' ? t.facilities.closeDetails : t.facilities.exploreMore}</span>
+                    <ChevronRight className={`w-5 h-5 transition-transform ${expandedFacility === 'spa' ? 'rotate-90' : 'group-hover:translate-x-1'}`} />
+                  </button>
+                </div>
+                {expandedFacility === 'spa' && (
+                  <div className="px-8 pb-8 border-t border-gray-200 pt-6 animate-[fadeIn_0.4s_ease-out]">
+                    <p className="text-gray-700 mb-6 leading-relaxed">
+                      {t.facilities.spa.details}
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {t.facilities.spa.features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-gray-700">
+                          <div className="w-2 h-2 bg-[#D4AF37] rounded-full flex-shrink-0"></div>
+                          <span className="text-sm">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </FadeInSection>
+          </div>
+        </div>
+      </section>
+
+      {/* Gym Lightbox */}
+      {gymLightboxOpen && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
+          onClick={closeGymLightbox}
+        >
+          <button
+            onClick={closeGymLightbox}
+            className="absolute top-4 right-4 text-white hover:text-[#D4AF37] transition-colors z-10"
+            aria-label="Close lightbox"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            <img
+              src={gymImages[gymLightboxIndex]}
+              alt={`Gym ${gymLightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+              loading="lazy"
+            />
+            
+            {gymImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    prevGymLightboxImage()
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    nextGymLightboxImage()
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
+                  {gymLightboxIndex + 1} / {gymImages.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Spa Lightbox */}
+      {spaLightboxOpen && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4"
+          onClick={closeSpaLightbox}
+        >
+          <button
+            onClick={closeSpaLightbox}
+            className="absolute top-4 right-4 text-white hover:text-[#D4AF37] transition-colors z-10"
+            aria-label="Close lightbox"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            <img
+              src={spaImages[spaLightboxIndex]}
+              alt={`Spa ${spaLightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+              loading="lazy"
+            />
+            
+            {spaImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    prevSpaLightboxImage()
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    nextSpaLightboxImage()
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-300 z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
+                  {spaLightboxIndex + 1} / {spaImages.length}
                 </div>
               </>
             )}
