@@ -61,40 +61,91 @@ export default function HomePage() {
   const [spaLightboxOpen, setSpaLightboxOpen] = useState(false)
   const [spaLightboxIndex, setSpaLightboxIndex] = useState(0)
 
-  // Hotel images for experience carousel
-  const hotelImages = [
-    '/hotel_img/BGRK3368.JPG',
-    '/hotel_img/BGRK3409.JPG',
-    '/hotel_img/BGRK3409 (1).JPG',
-    '/hotel_img/IMGM8778.JPG',
-    '/hotel_img/IMGM8809.JPG',
-    '/hotel_img/IMGM8827.JPG',
-  ]
+  // CMS-driven images (loaded from content management system)
+  const [hotelImages, setHotelImages] = useState<string[]>([])
+  const [gymImages, setGymImages] = useState<string[]>([])
+  const [spaImages, setSpaImages] = useState<string[]>([])
 
-  // Facilities images
-  const gymImages = [
-    '/facilities/gym-1.jpg',
-    '/facilities/gym-2.jpg',
-    '/facilities/gym-3.jpg',
-    '/facilities/gym-4.jpg',
-  ]
+  // Helper function to get initial video URL using NEXT_PUBLIC_MEDIA_URL if available
+  const getInitialVideoUrl = (): string => {
+    const defaultPath = '/uploads/main_page_video_9db938646a.MP4'
+    const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL
+    
+    if (mediaUrl) {
+      const baseUrl = mediaUrl.replace(/\/$/, '')
+      const cleanPath = defaultPath.replace(/^\/+/, '')
+      return `${baseUrl}/${cleanPath}`
+    }
+    
+    return defaultPath
+  }
 
-  const spaImages = [
-    '/facilities/spa-1.jpg',
-    '/facilities/spa-2.jpg',
-    '/facilities/spa-3.jpg',
-  ]
+  const [backgroundVideoUrl, setBackgroundVideoUrl] = useState<string>(getInitialVideoUrl())
+
+  // Helper function to resolve media URLs from CMS
+  // Uses NEXT_PUBLIC_MEDIA_URL from .env for videos and images (except rooms)
+  const resolveMediaUrl = React.useCallback((url: string | null | undefined): string | null => {
+    if (!url) return null
+    
+    // If it's already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url
+    }
+    
+    // Exclude rooms - rooms should use their own logic
+    // If the URL contains /uploads/rooms/, use backend URL (rooms logic)
+    if (url.includes('/uploads/rooms/') || url.includes('uploads/rooms/')) {
+      if (url.startsWith('/uploads/')) {
+        return `${getBackendUrl()}${url}`
+      }
+      if (!url.startsWith('/')) {
+        return `${getBackendUrl()}/uploads/rooms/${url}`
+      }
+      return `${getBackendUrl()}${url}`
+    }
+    
+    // Check if NEXT_PUBLIC_MEDIA_URL is set in environment
+    const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL
+    
+    if (mediaUrl) {
+      // Remove trailing slash from media URL
+      const baseUrl = mediaUrl.replace(/\/$/, '')
+      
+      // Remove leading slash from path
+      const cleanPath = url.replace(/^\/+/, '')
+      
+      // Construct full URL
+      return `${baseUrl}/${cleanPath}`
+    }
+    
+    // Fallback to original behavior if NEXT_PUBLIC_MEDIA_URL is not set
+    // If it starts with /uploads/, prepend backend URL
+    if (url.startsWith('/uploads/')) {
+      return `${getBackendUrl()}${url}`
+    }
+    
+    // If it doesn't start with /, assume it's relative to uploads
+    if (!url.startsWith('/')) {
+      return `${getBackendUrl()}/uploads/${url}`
+    }
+    
+    // For public paths, return as is
+    return url
+  }, [])
 
   const nextExperienceImage = () => {
+    if (hotelImages.length === 0) return
     setExperienceCarouselIndex((prev) => (prev + 1) % hotelImages.length)
   }
 
   const prevExperienceImage = () => {
+    if (hotelImages.length === 0) return
     setExperienceCarouselIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length)
   }
 
   // Auto-play carousel
   useEffect(() => {
+    if (hotelImages.length === 0) return
     const interval = setInterval(() => {
       setExperienceCarouselIndex((prev) => (prev + 1) % hotelImages.length)
     }, 5000) // Change image every 5 seconds
@@ -104,6 +155,7 @@ export default function HomePage() {
 
   // Auto-play carousel for gym images
   useEffect(() => {
+    if (gymImages.length === 0) return
     const interval = setInterval(() => {
       setGymCarouselIndex((prev) => (prev + 1) % gymImages.length)
     }, 4000) // Change image every 4 seconds
@@ -113,6 +165,7 @@ export default function HomePage() {
 
   // Auto-play carousel for spa images
   useEffect(() => {
+    if (spaImages.length === 0) return
     const interval = setInterval(() => {
       setSpaCarouselIndex((prev) => (prev + 1) % spaImages.length)
     }, 4000) // Change image every 4 seconds
@@ -131,10 +184,12 @@ export default function HomePage() {
   }
 
   const nextExperienceLightboxImage = () => {
+    if (hotelImages.length === 0) return
     setExperienceLightboxIndex((prev) => (prev + 1) % hotelImages.length)
   }
 
   const prevExperienceLightboxImage = () => {
+    if (hotelImages.length === 0) return
     setExperienceLightboxIndex((prev) => (prev - 1 + hotelImages.length) % hotelImages.length)
   }
 
@@ -250,7 +305,17 @@ export default function HomePage() {
       const data = await response.json()
       
       if (data.success && data.menu) {
-        window.open(`${getBackendUrl()}${data.menu.url}`, '_blank')
+        const menuUrl = data.menu.type === 'link'
+          ? data.menu.url
+          : `${getBackendUrl()}${data.menu.url}`
+
+        // Ensure URL is valid before opening
+        try {
+          const finalUrl = new URL(menuUrl, window.location.origin).toString()
+          window.open(finalUrl, '_blank')
+        } catch {
+          toast.error('Invalid menu URL')
+        }
       } else {
         toast.error('Menu not available')
       }
@@ -266,18 +331,14 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Load video when component mounts (hero section is above the fold)
+  // Load video when component mounts or video URL changes
   useEffect(() => {
-    if (videoRef.current && !videoLoaded) {
-      // Load video immediately since it's in the hero section
+    if (videoRef.current) {
+      // Reload video when URL changes
       videoRef.current.load()
       setVideoLoaded(true)
     }
-  }, [videoLoaded])
-
-  useEffect(() => {
-    fetchRooms()
-  }, [])
+  }, [backgroundVideoUrl])
 
   // Auto-update check-out when check-in changes to ensure it's at least 1 night
   useEffect(() => {
@@ -302,6 +363,7 @@ export default function HomePage() {
     try {
       setLoadingRooms(true)
       // Use Next.js API route instead of direct backend call to avoid CORS/mixed content issues
+      // NOTE: Rooms are NOT managed by CMS - they use the rooms API
       const apiUrl = '/api/rooms?limit=4'
       console.log('🔍 Fetching rooms from:', apiUrl)
       
@@ -335,6 +397,226 @@ export default function HomePage() {
       setLoadingRooms(false)
     }
   }
+
+  // Fetch background video from CMS
+  const fetchBackgroundVideo = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/content/home/hero')
+      const data = await response.json()
+      if (data.success && data.content) {
+        const videoContent = data.content.find((item: any) => item.key === 'background_video' && item.type === 'video')
+        if (videoContent) {
+          const videoUrl = videoContent.image_url 
+            ? resolveMediaUrl(videoContent.image_url)
+            : videoContent.content 
+            ? resolveMediaUrl(videoContent.content)
+            : null
+          if (videoUrl) {
+            setBackgroundVideoUrl(videoUrl)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching background video:', error)
+      // Keep default video if fetch fails
+    }
+  }, [resolveMediaUrl])
+
+  // Default hotel images (used if CMS doesn't provide images)
+  const defaultHotelImages = [
+    '/uploads/IMGM_8778_79604f0f92.JPG',
+    '/uploads/BGRK_3409_4f9061db39.JPG',
+    '/uploads/IMGM_8827_291acf5436.JPG',
+    '/uploads/IMGM_8809_ff83595150.JPG',
+    '/uploads/BGRK_3368_d4949620de.JPG'
+  ]
+
+  // Fetch experience images from CMS (home/about section)
+  const fetchExperienceImages = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/content/home/about')
+      const data = await response.json()
+      if (data.success && data.content) {
+        const imageItems = data.content.filter((item: any) => item.type === 'image' && item.is_active)
+        
+        // Sort by display_order
+        imageItems.sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+        
+        const images: string[] = []
+        imageItems.forEach((item: any) => {
+          // Handle images array
+          if (item.images && Array.isArray(item.images)) {
+            item.images.forEach((img: string) => {
+              const resolvedUrl = resolveMediaUrl(img)
+              if (resolvedUrl) images.push(resolvedUrl)
+            })
+          }
+          // Handle single image_url
+          if (item.image_url) {
+            const resolvedUrl = resolveMediaUrl(item.image_url)
+            if (resolvedUrl) images.push(resolvedUrl)
+          }
+        })
+        
+        // Use CMS images if available, otherwise use default images
+        if (images.length > 0) {
+          setHotelImages(images)
+        } else {
+          // Use default hotel images with media URL resolution
+          const resolvedDefaultImages = defaultHotelImages
+            .map(img => resolveMediaUrl(img))
+            .filter((url): url is string => url !== null)
+          setHotelImages(resolvedDefaultImages)
+        }
+      } else {
+        // If API fails or returns no data, use default images
+        const resolvedDefaultImages = defaultHotelImages
+          .map(img => resolveMediaUrl(img))
+          .filter((url): url is string => url !== null)
+        setHotelImages(resolvedDefaultImages)
+      }
+    } catch (error) {
+      console.error('Error fetching experience images:', error)
+      // On error, use default images
+      const resolvedDefaultImages = defaultHotelImages
+        .map(img => resolveMediaUrl(img))
+        .filter((url): url is string => url !== null)
+      setHotelImages(resolvedDefaultImages)
+    }
+  }, [resolveMediaUrl])
+
+  // Default gym images (used if CMS doesn't provide images)
+  const defaultGymImages = [
+    '/uploads/gym_1_96f12e90e7.jpg',
+    '/uploads/gym_2_71273151d9.jpg',
+    '/uploads/gym_3_ee89e9cacf.jpg',
+    '/uploads/gym_4_8cdecd8170.jpg'
+  ]
+
+  // Fetch gym images from CMS (facilities/gym section)
+  const fetchGymImages = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/content/facilities/gym')
+      const data = await response.json()
+      if (data.success && data.content) {
+        const imageItems = data.content.filter((item: any) => item.type === 'image' && item.is_active)
+        
+        // Sort by display_order
+        imageItems.sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+        
+        const images: string[] = []
+        imageItems.forEach((item: any) => {
+          // Handle images array
+          if (item.images && Array.isArray(item.images)) {
+            item.images.forEach((img: string) => {
+              const resolvedUrl = resolveMediaUrl(img)
+              if (resolvedUrl) images.push(resolvedUrl)
+            })
+          }
+          // Handle single image_url
+          if (item.image_url) {
+            const resolvedUrl = resolveMediaUrl(item.image_url)
+            if (resolvedUrl) images.push(resolvedUrl)
+          }
+        })
+        
+        // Use CMS images if available, otherwise use default images
+        if (images.length > 0) {
+          setGymImages(images)
+        } else {
+          // Use default gym images with media URL resolution
+          const resolvedDefaultImages = defaultGymImages
+            .map(img => resolveMediaUrl(img))
+            .filter((url): url is string => url !== null)
+          setGymImages(resolvedDefaultImages)
+        }
+      } else {
+        // If API fails or returns no data, use default images
+        const resolvedDefaultImages = defaultGymImages
+          .map(img => resolveMediaUrl(img))
+          .filter((url): url is string => url !== null)
+        setGymImages(resolvedDefaultImages)
+      }
+    } catch (error) {
+      console.error('Error fetching gym images:', error)
+      // On error, use default images
+      const resolvedDefaultImages = defaultGymImages
+        .map(img => resolveMediaUrl(img))
+        .filter((url): url is string => url !== null)
+      setGymImages(resolvedDefaultImages)
+    }
+  }, [resolveMediaUrl])
+
+  // Default spa images (used if CMS doesn't provide images)
+  const defaultSpaImages = [
+    '/uploads/spa_1_00a1b0290f.jpg',
+    '/uploads/spa_2_6e4153542a.jpg',
+    '/uploads/spa_3_f1ec0e55a9.jpg',
+    '/uploads/spa_4_57380f8288.jpg'
+  ]
+
+  // Fetch spa images from CMS (facilities/spa section)
+  const fetchSpaImages = React.useCallback(async () => {
+    try {
+      const response = await fetch('/api/content/facilities/spa')
+      const data = await response.json()
+      if (data.success && data.content) {
+        const imageItems = data.content.filter((item: any) => item.type === 'image' && item.is_active)
+        
+        // Sort by display_order
+        imageItems.sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+        
+        const images: string[] = []
+        imageItems.forEach((item: any) => {
+          // Handle images array
+          if (item.images && Array.isArray(item.images)) {
+            item.images.forEach((img: string) => {
+              const resolvedUrl = resolveMediaUrl(img)
+              if (resolvedUrl) images.push(resolvedUrl)
+            })
+          }
+          // Handle single image_url
+          if (item.image_url) {
+            const resolvedUrl = resolveMediaUrl(item.image_url)
+            if (resolvedUrl) images.push(resolvedUrl)
+          }
+        })
+        
+        // Use CMS images if available, otherwise use default images
+        if (images.length > 0) {
+          setSpaImages(images)
+        } else {
+          // Use default spa images with media URL resolution
+          const resolvedDefaultImages = defaultSpaImages
+            .map(img => resolveMediaUrl(img))
+            .filter((url): url is string => url !== null)
+          setSpaImages(resolvedDefaultImages)
+        }
+      } else {
+        // If API fails or returns no data, use default images
+        const resolvedDefaultImages = defaultSpaImages
+          .map(img => resolveMediaUrl(img))
+          .filter((url): url is string => url !== null)
+        setSpaImages(resolvedDefaultImages)
+      }
+    } catch (error) {
+      console.error('Error fetching spa images:', error)
+      // On error, use default images
+      const resolvedDefaultImages = defaultSpaImages
+        .map(img => resolveMediaUrl(img))
+        .filter((url): url is string => url !== null)
+      setSpaImages(resolvedDefaultImages)
+    }
+  }, [resolveMediaUrl])
+
+  // Fetch all CMS content on component mount
+  useEffect(() => {
+    fetchRooms()
+    fetchBackgroundVideo()
+    fetchExperienceImages()
+    fetchGymImages()
+    fetchSpaImages()
+  }, [fetchBackgroundVideo, fetchExperienceImages, fetchGymImages, fetchSpaImages])
 
   const handleReservation = (e: React.FormEvent) => {
     e.preventDefault()
@@ -507,8 +789,9 @@ export default function HomePage() {
             playsInline
             preload="none"
             className="absolute inset-0 w-full h-full object-cover scale-105 transform transition-transform duration-[10000ms]"
+            key={backgroundVideoUrl}
           >
-            <source src="/bg-video.MP4" type="video/mp4" />
+            <source src={backgroundVideoUrl} type="video/mp4" />
           </video>
           {/* Premium Multi-layer Overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
@@ -690,10 +973,15 @@ export default function HomePage() {
             <FadeInSection direction="right" className="relative">
               <div 
                 className="relative h-96 lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl group cursor-pointer"
-                onClick={() => openExperienceLightbox(experienceCarouselIndex)}
+                onClick={() => {
+                  if (hotelImages.length > 0) {
+                    openExperienceLightbox(experienceCarouselIndex)
+                  }
+                }}
               >
                 {/* Carousel Images */}
-                {hotelImages.map((image, index) => (
+                {hotelImages.length > 0 ? (
+                  hotelImages.map((image, index) => (
                   <div
                     key={index}
                     className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -709,7 +997,15 @@ export default function HomePage() {
                       priority={index === 0}
                     />
                   </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center">
+                    <div className="text-center text-gray-600">
+                      <Star className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-sm">Loading images...</p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Zoom Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 z-20">
@@ -766,6 +1062,7 @@ export default function HomePage() {
                     </button>
 
                     {/* Dot Indicators */}
+                    {hotelImages.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                       {hotelImages.map((_, index) => (
                         <button
@@ -783,11 +1080,14 @@ export default function HomePage() {
                         />
                       ))}
                     </div>
+                    )}
 
                     {/* Image Counter */}
+                    {hotelImages.length > 0 && (
                     <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm z-10">
                       {experienceCarouselIndex + 1} / {hotelImages.length}
                     </div>
+                    )}
                   </>
                 )}
               </div>
@@ -811,6 +1111,7 @@ export default function HomePage() {
           </button>
           
           <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            {hotelImages.length > 0 && hotelImages[experienceLightboxIndex] && (
             <img
               src={hotelImages[experienceLightboxIndex]}
               alt={`${t.about.experience.title} - ${experienceLightboxIndex + 1}`}
@@ -818,6 +1119,7 @@ export default function HomePage() {
               onClick={(e) => e.stopPropagation()}
               loading="lazy"
             />
+            )}
             
             {hotelImages.length > 1 && (
               <>
@@ -842,9 +1144,11 @@ export default function HomePage() {
                   <ChevronRight className="w-6 h-6" />
                 </button>
                 
+                {hotelImages.length > 0 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full z-10">
                   {experienceLightboxIndex + 1} / {hotelImages.length}
                 </div>
+                )}
               </>
             )}
           </div>
@@ -876,9 +1180,14 @@ export default function HomePage() {
               <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 h-full flex flex-col">
                 <div 
                   className="relative h-80 overflow-hidden cursor-pointer"
-                  onClick={() => openGymLightbox(gymCarouselIndex)}
+                  onClick={() => {
+                    if (gymImages.length > 0) {
+                      openGymLightbox(gymCarouselIndex)
+                    }
+                  }}
                 >
-                  {gymImages.map((image, index) => (
+                  {gymImages.length > 0 ? (
+                    gymImages.map((image, index) => (
                     <div
                       key={index}
                       className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -893,12 +1202,21 @@ export default function HomePage() {
                         loading={index === 0 ? "eager" : "lazy"}
                       />
                     </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <Dumbbell className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-sm">Loading images...</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 group-hover:via-black/10 transition-all duration-300" />
                   <div className="absolute top-4 left-4 bg-[#D4AF37] text-white px-4 py-2 rounded-full flex items-center gap-2 z-10">
                     <Dumbbell className="w-5 h-5" />
                     <span className="font-semibold">{t.facilities.gym.title}</span>
                   </div>
+                  {gymImages.length > 0 && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -909,6 +1227,8 @@ export default function HomePage() {
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
+                  )}
+                  {gymImages.length > 0 && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -919,9 +1239,12 @@ export default function HomePage() {
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
+                  )}
+                  {gymImages.length > 0 && (
                   <div className="absolute bottom-4 right-4 text-white text-sm bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full z-10">
                     {gymCarouselIndex + 1} / {gymImages.length}
                   </div>
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
                       <ZoomIn className="w-8 h-8 text-white" />
@@ -964,9 +1287,14 @@ export default function HomePage() {
               <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 h-full flex flex-col">
                 <div 
                   className="relative h-80 overflow-hidden cursor-pointer"
-                  onClick={() => openSpaLightbox(spaCarouselIndex)}
+                  onClick={() => {
+                    if (spaImages.length > 0) {
+                      openSpaLightbox(spaCarouselIndex)
+                    }
+                  }}
                 >
-                  {spaImages.map((image, index) => (
+                  {spaImages.length > 0 ? (
+                    spaImages.map((image, index) => (
                     <div
                       key={index}
                       className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -981,12 +1309,22 @@ export default function HomePage() {
                         loading={index === 0 ? "eager" : "lazy"}
                       />
                     </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-400 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-sm">Loading images...</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/40 group-hover:via-black/10 transition-all duration-300" />
                   <div className="absolute top-4 left-4 bg-[#D4AF37] text-white px-4 py-2 rounded-full flex items-center gap-2 z-10">
                     <Sparkles className="w-5 h-5" />
                     <span className="font-semibold">{t.facilities.spa.title}</span>
                   </div>
+                  {spaImages.length > 0 && (
+                    <>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -1010,6 +1348,8 @@ export default function HomePage() {
                   <div className="absolute bottom-4 right-4 text-white text-sm bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full z-10">
                     {spaCarouselIndex + 1} / {spaImages.length}
                   </div>
+                    </>
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                     <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
                       <ZoomIn className="w-8 h-8 text-white" />
@@ -1065,6 +1405,7 @@ export default function HomePage() {
           </button>
           
           <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            {gymImages.length > 0 && gymImages[gymLightboxIndex] && (
             <img
               src={gymImages[gymLightboxIndex]}
               alt={`Gym ${gymLightboxIndex + 1}`}
@@ -1072,6 +1413,7 @@ export default function HomePage() {
               onClick={(e) => e.stopPropagation()}
               loading="lazy"
             />
+            )}
             
             {gymImages.length > 1 && (
               <>
@@ -1120,6 +1462,7 @@ export default function HomePage() {
           </button>
           
           <div className="relative max-w-7xl w-full h-full flex items-center justify-center">
+            {spaImages.length > 0 && spaImages[spaLightboxIndex] && (
             <img
               src={spaImages[spaLightboxIndex]}
               alt={`Spa ${spaLightboxIndex + 1}`}
@@ -1127,6 +1470,7 @@ export default function HomePage() {
               onClick={(e) => e.stopPropagation()}
               loading="lazy"
             />
+            )}
             
             {spaImages.length > 1 && (
               <>

@@ -42,33 +42,70 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    const { getBackendUrl } = await import('@/lib/server-backend-url');
-    const baseBackendUrl = getBackendUrl();
+    // Check if this is a room image - rooms should use backend URL
+    const isRoomImage = imagePath.includes('uploads/rooms/') || imagePath.includes('/uploads/rooms/');
+    
+    let imageUrl: string;
+    
+    if (isRoomImage) {
+      // For rooms, use backend URL (existing logic)
+      const { getBackendUrl } = await import('@/lib/server-backend-url');
+      const baseBackendUrl = getBackendUrl();
+      const normalizedBackendUrl = baseBackendUrl.endsWith('/') ? baseBackendUrl.slice(0, -1) : baseBackendUrl;
+      
+      // Ensure the path starts with uploads/
+      let normalizedImagePath = imagePath;
+      if (!normalizedImagePath.startsWith('uploads/')) {
+        normalizedImagePath = `uploads/${normalizedImagePath}`;
+      }
+      
+      // Ensure we don't have double slashes
+      normalizedImagePath = normalizedImagePath.replace(/^\/+/, '');
+      
+      // Construct the final URL
+      imageUrl = `${normalizedBackendUrl}/${normalizedImagePath}`;
+    } else {
+      // For non-room content, use NEXT_PUBLIC_MEDIA_URL from .env
+      const mediaUrl = process.env.NEXT_PUBLIC_MEDIA_URL;
+      
+      if (mediaUrl) {
+        // Remove trailing slash from media URL
+        const baseUrl = mediaUrl.replace(/\/$/, '');
+        
+        // Remove leading slash from path
+        const cleanPath = imagePath.replace(/^\/+/, '');
+        
+        // Construct full URL
+        imageUrl = `${baseUrl}/${cleanPath}`;
+      } else {
+        // Fallback to backend URL if NEXT_PUBLIC_MEDIA_URL is not set
+        const { getBackendUrl } = await import('@/lib/server-backend-url');
+        const baseBackendUrl = getBackendUrl();
+        const normalizedBackendUrl = baseBackendUrl.endsWith('/') ? baseBackendUrl.slice(0, -1) : baseBackendUrl;
+        
+        // Ensure the path starts with uploads/
+        let normalizedImagePath = imagePath;
+        if (!normalizedImagePath.startsWith('uploads/')) {
+          normalizedImagePath = `uploads/${normalizedImagePath}`;
+        }
+        
+        // Ensure we don't have double slashes
+        normalizedImagePath = normalizedImagePath.replace(/^\/+/, '');
+        
+        // Construct the final URL
+        imageUrl = `${normalizedBackendUrl}/${normalizedImagePath}`;
+      }
+    }
     
     // Log environment info for debugging
     console.log('Environment:', {
-      backendUrl: baseBackendUrl,
+      isRoomImage,
+      mediaUrl: process.env.NEXT_PUBLIC_MEDIA_URL,
       host: request.headers.get('host')
     });
     
-    // Construct the full URL - handle both local and production paths
-    const normalizedBackendUrl = baseBackendUrl.endsWith('/') ? baseBackendUrl.slice(0, -1) : baseBackendUrl;
-    
-    // Ensure the path starts with uploads/
-    let normalizedImagePath = imagePath;
-    if (!normalizedImagePath.startsWith('uploads/')) {
-      normalizedImagePath = `uploads/${normalizedImagePath}`;
-    }
-    
-    // Ensure we don't have double slashes
-    normalizedImagePath = normalizedImagePath.replace(/^\/+/, '');
-    
-    // Construct the final URL
-    const imageUrl = `${normalizedBackendUrl}/${normalizedImagePath}`;
-    
     console.log('Constructed image URL:', {
       originalPath: imagePath,
-      normalizedPath: normalizedImagePath,
       finalUrl: imageUrl
     });
     

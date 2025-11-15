@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Clock, Utensils, Coffee, Home, Phone, Mail, MapPin, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
 import { getBackendUrl } from '@/lib/backend-url'
+import { getImageUrl } from '../utils/image'
 import FadeInSection from '@/components/FadeInSection'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/lib/i18n'
@@ -16,12 +17,15 @@ export default function RestaurantPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
-  // Restaurant images for carousel
-  const restaurantImages = [
-    '/restaurant/BGRK3409.JPG',
-    '/restaurant/IMGM8809.JPG',
-    '/restaurant/IMGM8813.JPG',
+  // Default restaurant images (resolved using NEXT_PUBLIC_MEDIA_URL)
+  const defaultRestaurantImages = [
+    '/uploads/IMGM_8813_01f6fccb28.JPG',
+    '/uploads/IMGM_8809_f08ed368ad.JPG',
+    '/uploads/BGRK_3409_dc79c21238.JPG',
   ]
+
+  // Restaurant images for carousel (resolved with media URL)
+  const restaurantImages = defaultRestaurantImages.map(img => getImageUrl(img))
 
   const nextImage = () => {
     setCarouselIndex((prev) => (prev + 1) % restaurantImages.length)
